@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import CVUpload from '@/components/CVUpload';
 import ChatInterface from '@/components/ChatInterface';
-import JobResults from '@/components/JobResults';
+
 import { Sparkles } from 'lucide-react';
 import CareerPathSelector from '@/components/CareerPathSelector';
 import CareerGalaxy from '@/components/CareerGalaxy';
@@ -29,6 +29,14 @@ export default function Home() {
   // Check for returning user on page load
   useEffect(() => {
     const checkReturningUser = async () => {
+      // Check if user just clicked "Start Over"
+      const freshStart = sessionStorage.getItem('freshStart');
+      if (freshStart) {
+        console.log('🆕 Fresh start detected - skipping auto-load');
+        sessionStorage.removeItem('freshStart');
+        return; // Don't load any saved data
+      }
+
       const userId = getUserId();
 
       if (userId) {
@@ -120,20 +128,30 @@ export default function Home() {
   };
 
   const handleSearchReady = (data: any) => {
-    console.log('Search ready with data:', data);
+    console.log('🔍 [page.tsx] handleSearchReady called with data:', data);
 
     // Capture paths array if available
     if (data.paths && data.paths.length > 0) {
-      console.log('Setting all paths:', data.paths);
+      console.log('✅ [page.tsx] Setting all paths:', data.paths.length, 'paths');
+      console.log('   Paths structure:', data.paths.map((p: any) => ({
+        type: p.type,
+        hasPathNodes: !!p.pathNodes,
+        pathNodesCount: p.pathNodes?.length || 0,
+        hasNodeIds: !!p.nodeIds,
+        nodeIdsCount: p.nodeIds?.length || 0
+      })));
       setAllPaths(data.paths);
+    } else {
+      console.log('⚠️ [page.tsx] No paths in data');
     }
 
     if (data.recommendedPath) {
-      console.log('Setting recommended path:', data.recommendedPath);
+      console.log('✅ [page.tsx] Setting recommended path:', data.recommendedPath);
       setRecommendedPath(data.recommendedPath);
 
       // Transition to galaxy view
       if (step !== 'galaxy') {
+        console.log('🌌 [page.tsx] Transitioning to galaxy view');
         setStep('galaxy');
       }
     } else if (data.clusters) {
@@ -150,7 +168,7 @@ export default function Home() {
       // Don't switch to 'results' if we're already in galaxy view
       // This keeps the split-screen layout intact
       if (step !== 'galaxy') {
-        setStep('results');
+        setStep('galaxy'); // Force galaxy view even for legacy queries
       }
     } else {
       console.warn('No clusters, recommendedPath, or queries in data');
@@ -197,7 +215,7 @@ export default function Home() {
       experienceLevel: 'entry_level', // Default or extracted
       workType: 'any'
     });
-    setStep('results');
+    setStep('galaxy');
   };
 
   const handleMessagesUpdate = (messages: any[]) => {
@@ -260,14 +278,7 @@ export default function Home() {
                 onRecommendationReceived={handleRecommendationReceived}
               />
 
-              <div className="flex justify-center">
-                <button
-                  onClick={() => setStep('results')}
-                  className="px-8 py-4 bg-gradient-to-r from-orange-500 to-blue-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-orange-500/50 transition-all transform hover:scale-105 shadow-xl"
-                >
-                  ✨ Show Matched Jobs
-                </button>
-              </div>
+
             </div>
           )}
 
@@ -303,43 +314,7 @@ export default function Home() {
             </div>
           )}
 
-          {step === 'results' && (
-            <div className="w-full max-w-7xl mx-auto space-y-6">
-              {/* Back Button */}
-              <button
-                onClick={() => {
-                  setStep('upload');
-                  setCvText('');
-                  setSearchParams({});
-                }}
-                className="text-sm text-cyan-300 hover:text-white font-medium flex items-center gap-2 group transition-colors"
-              >
-                <span className="transform group-hover:-translate-x-1 transition-transform">←</span>
-                Start New Search
-              </button>
 
-              {/* Chat Bar - Horizontal across top */}
-              <div className="bg-white/5 backdrop-blur-xl p-4 rounded-2xl border border-white/10">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="text-2xl">💬</span>
-                  <div>
-                    <h2 className="text-lg font-bold text-white">Refine Your Search</h2>
-                    <p className="text-cyan-200/70 text-xs">Keep chatting to find better matches</p>
-                  </div>
-                </div>
-                <ChatInterface
-                  cvText={cvText}
-                  onSearchReady={handleSearchReady}
-                  compact={true}
-                  initialMessages={chatMessages}
-                  onMessagesUpdate={handleMessagesUpdate}
-                />
-              </div>
-
-              {/* Job Results - Full width below */}
-              <JobResults searchParams={searchParams} cvText={cvText} />
-            </div>
-          )}
         </div>
       </div>
     </main>

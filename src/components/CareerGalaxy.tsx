@@ -112,7 +112,50 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                             console.log(`✨ Injecting dynamic node: ${nodeInfo.name} (${nodeInfo.id})`);
 
                             // Infer parent from previous node in path
-                            const parentId = index > 0 ? path.pathNodes![index - 1].id : null;
+                            let parentId = index > 0 ? path.pathNodes![index - 1].id : null;
+
+                            // 🚨 ORPHAN FIX: If this is the first node and has no parent, we MUST find one
+                            // otherwise the layout engine will drop it (it only renders nodes connected to roots)
+                            if (!parentId && index === 0) {
+                                const targetLevel = (nodeInfo.level as number) - 1;
+                                if (targetLevel >= 0) {
+                                    const potentialParents = Object.values(nodesMap).filter(n => n.level === targetLevel);
+
+                                    if (potentialParents.length > 0) {
+                                        // 1. Try keyword matching
+                                        const tokens = nodeInfo.name.toLowerCase().split(/\s+/).filter(t => t.length > 3);
+                                        let bestMatch: CareerNode | null = null;
+                                        let maxScore = 0;
+
+                                        potentialParents.forEach(parent => {
+                                            let score = 0;
+                                            const parentName = parent.name.toLowerCase();
+                                            tokens.forEach(token => {
+                                                if (parentName.includes(token)) score++;
+                                            });
+                                            if (score > maxScore) {
+                                                maxScore = score;
+                                                bestMatch = parent;
+                                            }
+                                        });
+
+                                        if (bestMatch) {
+                                            parentId = bestMatch.id;
+                                            console.log(`🔗 Auto-linked ${nodeInfo.name} to ${bestMatch.name} (Score: ${maxScore})`);
+                                        } else {
+                                            // 2. Fallback to a generic parent (better than invisible)
+                                            // Prefer "Technology" or "Business" if available, else first one
+                                            const fallback = potentialParents.find(p =>
+                                                p.name.includes('Technology') ||
+                                                p.name.includes('Business') ||
+                                                p.name.includes('General')
+                                            );
+                                            parentId = fallback ? fallback.id : potentialParents[0].id;
+                                            console.log(`🔗 Fallback link for ${nodeInfo.name} to ${nodesMap[parentId].name}`);
+                                        }
+                                    }
+                                }
+                            }
 
                             // Create new node
                             nodesMap[nodeInfo.id] = {
@@ -169,7 +212,8 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                 });
             });
 
-            console.log('🎨 Marking nodes as recommended:', Array.from(recommendedNodeIds));
+            console.log('🎨 [CareerGalaxy] Marking nodes as recommended:', Array.from(recommendedNodeIds));
+            console.log('   Total nodes to mark:', recommendedNodeIds.size);
 
             // Now apply recommended styling to all nodes in the set
             positionedNodes.forEach(node => {
@@ -250,6 +294,98 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
         return { visibleNodes: filteredNodes, visibleLinks: filteredLinks };
     }, [allPositionedNodes, links, visibleNodeIds]);
+
+    // 🔥 AUTO-REVEAL: Make recommended path visible when paths prop changes
+    useEffect(() => {
+        console.log('🔥 [CareerGalaxy] Auto-reveal useEffect triggered');
+        console.log('   paths:', paths?.length, 'paths');
+        console.log('   allPositionedNodes:', allPositionedNodes.allNodes.length, 'nodes');
+
+        if (!paths || paths.length === 0 || allPositionedNodes.allNodes.length === 0) {
+            console.log('   ❌ Skipping auto-reveal (no paths or no nodes)');
+            return;
+        }
+
+        // Extract the primary path (Direct Fit) or use the first path
+        const primaryPath = paths.find(p => p.type === 'Direct Fit') || paths[0];
+
+        if (!primaryPath) {
+            console.log('   ❌ No primary path found');
+            return;
+        }
+
+        // Extract node IDs from either pathNodes or nodeIds
+        const pathNodeIds = primaryPath.pathNodes
+            ? primaryPath.pathNodes.map((pn: any) => pn.id)
+            : (primaryPath.nodeIds || []);
+
+        console.log('   ✅ Primary path node IDs:', pathNodeIds);
+
+        if (pathNodeIds.length === 0) {
+            console.log('   ❌ No node IDs in primary path');
+            return;
+        }
+
+        // Collect all nodes that need to be visible (path + ancestors)
+        const nodesToReveal = new Set<string>();
+
+        pathNodeIds.forEach((nodeId: string) => {
+            nodesToReveal.add(nodeId);
+
+            // Walk up the tree to add all ancestors
+            let current = allPositionedNodes.allNodes.find(n => n.id === nodeId);
+            while (current && current.parentId) {
+                nodesToReveal.add(current.parentId);
+                current = allPositionedNodes.allNodes.find(n => n.id === current!.parentId);
+            }
+        });
+
+        console.log('   🌟 Revealing nodes:', Array.from(nodesToReveal));
+        console.log('   Total nodes to reveal:', nodesToReveal.size);
+
+        // Make all path nodes + ancestors visible
+        setVisibleNodeIds(prev => {
+            const newSet = new Set(prev);
+            nodesToReveal.forEach(id => newSet.add(id));
+            console.log('   ✨ Updated visibleNodeIds size:', newSet.size);
+            return newSet;
+        });
+
+        // Auto-expand parent nodes (except the final leaf)
+        const nodesToExpand = pathNodeIds.slice(0, -1);
+        console.log('   📂 Nodes to auto-expand:', nodesToExpand);
+
+        setExpandedNodeIds(prev => {
+            const newSet = new Set(prev);
+            nodesToExpand.forEach(id => newSet.add(id));
+            console.log('   ✨ Updated expandedNodeIds size:', newSet.size);
+            return newSet;
+        });
+
+        // Center on the final node in the path
+        const finalNodeId = pathNodeIds[pathNodeIds.length - 1];
+        const finalNode = allPositionedNodes.allNodes.find(n => n.id === finalNodeId);
+
+        if (finalNode) {
+            console.log('   🎯 Centering on final node:', finalNode.name);
+            setTimeout(() => {
+                // Inline centering logic (same as centerOnNode function below)
+                const baseWidth = 2000;
+                const baseHeight = 1200;
+                const zoom = 2.2; // Close zoom for job titles
+                const newWidth = baseWidth / zoom;
+                const newHeight = baseHeight / zoom;
+
+                setViewBoxState({
+                    x: finalNode.x - newWidth / 2,
+                    y: finalNode.y - newHeight / 2,
+                    width: newWidth,
+                    height: newHeight
+                });
+            }, 500); // Small delay to let visibility update first
+        }
+
+    }, [paths, allPositionedNodes]);
 
     // Auto-expand and zoom to the primary path when it loads
     // DISABLED: Let users manually explore the path instead of auto-expanding
@@ -1302,14 +1438,22 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                         try {
                             const userId = localStorage.getItem('userId');
                             if (userId) {
+                                // Delete chat history from DB
                                 await fetch('/api/chat-history', {
                                     method: 'DELETE',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({ userId })
                                 });
                             }
-                            localStorage.removeItem('userId');
-                            window.location.reload();
+
+                            // Clear ALL localStorage
+                            localStorage.clear();
+
+                            // Set a flag to indicate fresh start (prevents auto-loading)
+                            sessionStorage.setItem('freshStart', 'true');
+
+                            // Force a hard reload
+                            window.location.href = window.location.origin;
                         } catch (error) {
                             console.error('Error clearing data:', error);
                             alert('Failed to clear data. Try refreshing the page.');

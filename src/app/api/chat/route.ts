@@ -185,119 +185,131 @@ ${JSON.stringify(CAREER_GALAXY.nodes, (key, value) => {
         }
 
         // Extract JSON if present - try multiple aggressive patterns
+
+
+        // Extract JSON using robust index finding (regex fails on nested objects)
         let careerData = null;
+        const jsonStartIndex = content.indexOf('{');
+        const jsonEndIndex = content.lastIndexOf('}');
 
         console.log('=== EXTRACTING CAREER DATA ===');
         console.log('Response content length:', content.length);
-        console.log('Content preview:', content.substring(0, 300));
 
-        // Pattern 1: Code-fenced JSON
-        let jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
-        console.log('Pattern 1 (code fence) match:', !!jsonMatch);
-
-        // Pattern 2: Try without json keyword
-        if (!jsonMatch) {
-            jsonMatch = content.match(/```\s*([\s\S]*?)\s*```/);
-            console.log('Pattern 2 (plain fence) match:', !!jsonMatch);
-        }
-
-        // Pattern 3: Raw JSON object (more robust)
-        if (!jsonMatch) {
-            // Match any JSON object that contains "paths"
-            let match = content.match(/\{[\s\S]*"paths"\s*:\s*\[[\s\S]*?\][\s\S]*\}/);
-            if (match) {
-                jsonMatch = [match[0], match[0]];
-                console.log('Pattern 3 (raw JSON) found match');
-            }
-        }
-
-        // Parse the JSON if found
-        if (jsonMatch && jsonMatch[1]) {
-            console.log('📋 Found JSON, attempting parse...');
+        if (jsonStartIndex !== -1 && jsonEndIndex !== -1 && jsonEndIndex > jsonStartIndex) {
+            const jsonString = content.substring(jsonStartIndex, jsonEndIndex + 1);
             try {
-                const jsonStr = jsonMatch[1].trim();
-                const parsed = JSON.parse(jsonStr);
-                console.log('Parsed structure keys:', Object.keys(parsed));
-
-                // NEW FORMAT: Handle paths array
-                if (parsed.paths && Array.isArray(parsed.paths) && parsed.paths.length > 0) {
-                    const primaryPath = parsed.paths.find((p: any) => p.type === 'Direct Fit') || parsed.paths[0];
-
-                    // Extract nodeIds from pathNodes if available (new format), or use nodeIds directly (legacy)
-                    const nodeIds = primaryPath.pathNodes
-                        ? primaryPath.pathNodes.map((n: any) => n.id)
-                        : primaryPath.nodeIds;
-
-                    if (primaryPath && nodeIds) {
-                        careerData = {
-                            recommendedPath: {
-                                nodeIds: nodeIds,
-                                reasoning: primaryPath.reasoning
-                            },
-                            paths: parsed.paths,  // Store full paths array with pathNodes
-                            alternativePaths: parsed.paths.filter((p: any) => p.type !== 'Direct Fit')
-                        };
-                        console.log('✅ Valid paths array structure');
-                        console.log('Primary path IDs:', nodeIds);
-                        console.log('All paths:', parsed.paths.length);
-                    }
-                }
-                // LEGACY FORMAT: Handle single recommendedPath
-                else if (parsed.recommendedPath && parsed.recommendedPath.nodeIds) {
-                    careerData = parsed;
-                    console.log('✅ Valid legacy recommendedPath structure');
-                    console.log('Path IDs:', parsed.recommendedPath.nodeIds);
-                }
-                else {
-                    console.error('Invalid structure: missing paths array or recommendedPath.nodeIds');
-                }
-            } catch (e: any) {
-                console.error('❌ JSON parse failed:', e.message);
+                careerData = JSON.parse(jsonString);
+                console.log('✅ Successfully parsed JSON via index extraction');
+            } catch (e) {
+                console.error('❌ Failed to parse JSON via index extraction:', e);
             }
         }
 
-        // Clean the message - remove all JSON
-        let cleanMessage = content;
-
-        // Remove code fences
-        cleanMessage = cleanMessage.replace(/```json[\s\S]*?```/g, '');
-        cleanMessage = cleanMessage.replace(/```[\s\S]*?```/g, '');
-
-        // Remove raw JSON objects (aggressive)
-        // Matches { "synthesis_analysis" ... } or { "paths" ... }
-        cleanMessage = cleanMessage.replace(/\{[\s\S]*"synthesis_analysis"[\s\S]*\}/g, '');
-        cleanMessage = cleanMessage.replace(/\{[\s\S]*"paths"[\s\S]*\}/g, '');
-        cleanMessage = cleanMessage.replace(/\{[\s\S]*"recommendedPath"[\s\S]*\}/g, '');
-
-        // Clean up extra characters
-        cleanMessage = cleanMessage.replace(/^\s*\}\s*\}\s*`*\s*$/gm, '');
-        cleanMessage = cleanMessage.trim();
-
-        // If we have career data, we want to keep the AI's natural response if it exists
-        // The AI might have answered a question before the JSON block
-        if (careerData && careerData.recommendedPath) {
-            // If the message is empty (AI only output JSON), add a friendly transition
-            if (!cleanMessage || cleanMessage.trim().length < 5) {
-                cleanMessage = "Perfect! I've analyzed your experience and created a personalized career path. Let me show you the galaxy view where you can explore your recommended route! 🌟";
+        // Fallback to regex if index extraction failed
+        if (!careerData) {
+            console.log('⚠️ Index extraction failed, trying regex fallback...');
+            const match = content.match(/\{[\s\S]*"paths"\s*:\s*\[[\s\S]*?\][\s\S]*\}/);
+            if (match) {
+                try {
+                    careerData = JSON.parse(match[0]);
+                    console.log('✅ Successfully parsed JSON via regex fallback');
+                } catch (e) {
+                    console.error('❌ Failed to parse JSON via regex fallback:', e);
+                }
             }
-            // Otherwise, keep the AI's message (which might answer the user's question)
         }
 
-        // Fallback if message is empty
-        if (!cleanMessage || cleanMessage.length < 10) {
-            cleanMessage = "I've generated your personalized career path. Let's explore it in the galaxy view!";
+        // Construct the response message
+        // CRITICAL: If we have valid career data, ignore the raw content to avoid JSON artifacts
+        let finalMessage = '';
+
+        if (careerData) {
+            // Use the message from the JSON, or a default success message
+            finalMessage = careerData.message || "I've analyzed your profile and generated personalized career paths. Explore them in the galaxy view!";
+
+            // Log if we're ignoring pre-text
+            if (jsonStartIndex > 50) {
+                console.log('ℹ️ Ignoring pre-JSON text to ensure clean output');
+            }
+        } else {
+            // If parsing failed, return the raw content but clean code blocks
+            finalMessage = content.replace(/```json[\s\S]*?```/g, '[JSON Data]');
         }
 
         console.log('=== RESPONSE ===');
         console.log('Has career data:', !!careerData);
-        console.log('Clean message:', cleanMessage);
+        console.log('Final message:', finalMessage);
 
-        // Return full paths array for multi-path visualization
+        // 🔍 DIAGNOSTIC: Log the paths array structure
+        if (careerData?.paths) {
+            console.log('📊 PATHS ARRAY:', careerData.paths.length, 'paths');
+            careerData.paths.forEach((path: any, idx: number) => {
+                console.log(`  Path ${idx + 1}: ${path.type}`);
+                console.log(`    - Has pathNodes:`, !!path.pathNodes, `(${path.pathNodes?.length || 0} nodes)`);
+                console.log(`    - Has nodeIds:`, !!path.nodeIds, `(${path.nodeIds?.length || 0} IDs)`);
+            });
+        } else {
+            console.log('⚠️ NO PATHS DATA IN RESPONSE');
+        }
+
+        // Process careerData structure to normalize output
+        let processedData = {
+            paths: [],
+            recommendedPath: [],
+            recommendationReason: ''
+        };
+
+        if (careerData) {
+            // NEW FORMAT: Handle paths array
+            if (careerData.paths && Array.isArray(careerData.paths) && careerData.paths.length > 0) {
+                const primaryPath = careerData.paths.find((p: any) => p.type === 'Direct Fit') || careerData.paths[0];
+
+                // Extract nodeIds from pathNodes if available (new format), or use nodeIds directly (legacy)
+                const nodeIds = primaryPath.pathNodes
+                    ? primaryPath.pathNodes.map((n: any) => n.id)
+                    : (primaryPath.nodeIds || []);
+
+                processedData = {
+                    paths: careerData.paths,
+                    recommendedPath: nodeIds,
+                    recommendationReason: primaryPath.reasoning || careerData.recommendationReason || ''
+                };
+
+                console.log('✅ Valid paths array structure');
+                console.log('Primary path IDs:', nodeIds);
+            }
+            // LEGACY FORMAT: Handle single recommendedPath object
+            else if (careerData.recommendedPath && !Array.isArray(careerData.recommendedPath) && careerData.recommendedPath.nodeIds) {
+                processedData = {
+                    paths: [], // Legacy didn't have paths array
+                    recommendedPath: careerData.recommendedPath.nodeIds,
+                    recommendationReason: careerData.recommendedPath.reasoning || ''
+                };
+                console.log('✅ Valid legacy recommendedPath structure');
+            }
+            // SIMPLE FORMAT: recommendedPath is just an array of IDs
+            else if (Array.isArray(careerData.recommendedPath)) {
+                processedData = {
+                    paths: careerData.paths || [],
+                    recommendedPath: careerData.recommendedPath,
+                    recommendationReason: careerData.recommendationReason || ''
+                };
+                console.log('✅ Valid simple recommendedPath array');
+            }
+        }
+
+        // 🔍 DIAGNOSTIC: Log the processed data
+        console.log('📊 PROCESSED DATA:');
+        console.log('   Paths:', processedData.paths.length);
+        console.log('   Recommended Path:', processedData.recommendedPath);
+        console.log('   Reason:', processedData.recommendationReason);
+
+        // Return normalized data
         return NextResponse.json({
-            message: cleanMessage,
-            paths: careerData?.paths || [],  // Return all 3 paths from careerData
-            recommendedPath: careerData?.recommendedPath?.nodeIds || [],  // Keep for backwards compatibility
-            recommendationReason: careerData?.recommendedPath?.reasoning || '',
+            message: finalMessage,
+            paths: processedData.paths,
+            recommendedPath: processedData.recommendedPath,
+            recommendationReason: processedData.recommendationReason,
         });
 
     } catch (error: any) {
