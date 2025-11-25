@@ -17,6 +17,10 @@ interface CareerGalaxyProps {
             name: string;
             level: number;
         }>;
+        links?: Array<{         // Explicit graph connections
+            source: string;
+            target: string;
+        }>;
         reasoning: string;
         optimizedSearchQuery: string;
     }>;
@@ -111,8 +115,18 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                         if (!nodesMap[nodeInfo.id]) {
                             console.log(`✨ Injecting dynamic node: ${nodeInfo.name} (${nodeInfo.id})`);
 
-                            // Infer parent from previous node in path
-                            let parentId = index > 0 ? path.pathNodes![index - 1].id : null;
+                            // Infer parent from links array if available, or sequential order
+                            let parentId = null;
+                            if (path.links && Array.isArray(path.links)) {
+                                const link = path.links.find((l: any) => l.target === nodeInfo.id);
+                                if (link) {
+                                    parentId = link.source;
+                                }
+                            }
+
+                            if (!parentId) {
+                                parentId = index > 0 ? path.pathNodes![index - 1].id : null;
+                            }
 
                             // 🚨 ORPHAN FIX: If this is the first node and has no parent, we MUST find one
                             // otherwise the layout engine will drop it (it only renders nodes connected to roots)

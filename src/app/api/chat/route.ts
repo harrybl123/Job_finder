@@ -47,6 +47,29 @@ CRITICAL RULES:
         const conditionalPrompt = shouldGeneratePaths
             ? `\n\nGENERATION PHASE:
 You have enough information. Generate 3 distinct career paths based on the user's profile and answers.
+
+[STRICT CONSTRAINTS - THESE ARE ABSOLUTE RULES, NOT SUGGESTIONS]
+1. 🚫 FORBIDDEN MANAGEMENT TITLES: The career path MUST NEVER contain ANY role with the following keywords in the title:
+   - "Manager" (e.g., Product Manager, Engineering Manager, Strategy Manager)
+   - "Director" 
+   - "Head of"
+   - "VP" or "Vice President"
+   - "Executive"
+   - "C-Level" (CEO, CTO, etc.)
+   
+   ❌ WRONG: "Product Strategy Manager", "Engineering Manager", "Director of Product"
+   ✅ CORRECT: "Senior Product Strategist", "Principal Engineer", "Staff Product Designer"
+
+2. 👤 INDIVIDUAL CONTRIBUTOR (IC) TRACK ONLY: Your paths MUST follow the IC track:
+   - Junior/Associate → Mid-Level → Senior → Staff/Principal → Distinguished/Fellow
+   - Examples: "Junior Developer" → "Developer" → "Senior Developer" → "Staff Engineer" → "Principal Engineer"
+   - Examples: "Product Designer" → "Senior Product Designer" → "Staff Product Designer"
+   - Examples: "Data Analyst" → "Senior Data Analyst" → "Principal Data Scientist"
+
+3. 🛑 ABSOLUTE CEILING: NO role may exceed Senior IC level (Level 3-4) for most users.
+
+4. 🔗 GRAPH STRUCTURE: You MUST provide a "links" array for each path.
+
 STEP 1: SYNTHESIS ANALYSIS
 - Analyze the user's core strengths from their CV and chat answers.
 - Identify their latent potential (skills they have but might not realize apply elsewhere).
@@ -92,6 +115,9 @@ Return a JSON object with this structure:
       "pathNodes": [ // NEW: Dynamic node generation with FULL lineage
          { "id": "unique-id-1", "name": "Mid-Level Developer", "level": 2 },
          { "id": "unique-id-2", "name": "Senior Developer", "level": 3 }
+      ],
+      "links": [ // NEW: Explicit graph connections
+         { "source": "unique-id-1", "target": "unique-id-2" }
       ],
       "optimizedSearchQuery": "Senior Software Engineer London"
     },
