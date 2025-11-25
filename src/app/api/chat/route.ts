@@ -46,59 +46,100 @@ CRITICAL RULES:
 
         const conditionalPrompt = shouldGeneratePaths
             ? `\n\nGENERATION PHASE:
-You have enough information. Generate 3 distinct career paths based on the user's profile and answers.
+You have enough information. Generate career path recommendations.
 
-[STRICT CONSTRAINTS - THESE ARE ABSOLUTE RULES, NOT SUGGESTIONS]
-1. 🚫 FORBIDDEN MANAGEMENT TITLES: The career path MUST NEVER contain ANY role with the following keywords in the title:
-   - "Manager" (e.g., Product Manager, Engineering Manager, Strategy Manager)
-   - "Director" 
-   - "Head of"
-   - "VP" or "Vice President"
-   - "Executive"
-   - "C-Level" (CEO, CTO, etc.)
-   
-   ❌ WRONG: "Product Strategy Manager", "Engineering Manager", "Director of Product"
-   ✅ CORRECT: "Senior Product Strategist", "Principal Engineer", "Staff Product Designer"
+[ABSOLUTE REQUIREMENTS - SYSTEM WILL REJECT IF NOT MET]
+1. ✅ EXACTLY 3 PATHS: Your response MUST contain EXACTLY 3 objects in the "paths" array
+2. ✅ UNIQUE TYPES: Each path MUST have a different type: "Direct Fit", "Strategic Pivot", "Aspirational"
+3. ✅ DOMAIN CONSISTENCY: All paths MUST stay within the user's PRIMARY domain (detected in STEP 0)
 
-2. 👤 INDIVIDUAL CONTRIBUTOR (IC) TRACK ONLY: Your paths MUST follow the IC track:
-   - Junior/Associate → Mid-Level → Senior → Staff/Principal → Distinguished/Fellow
-   - Examples: "Junior Developer" → "Developer" → "Senior Developer" → "Staff Engineer" → "Principal Engineer"
-   - Examples: "Product Designer" → "Senior Product Designer" → "Staff Product Designer"
-   - Examples: "Data Analyst" → "Senior Data Analyst" → "Principal Data Scientist"
+[STRICT CONSTRAINTS - ABSOLUTE RULES]
+1. 🚫 FORBIDDEN MANAGEMENT TITLES: NEVER use these keywords:
+   - "Manager", "Director", "Head of", "VP", "Executive", "C-Level"
+   ❌ WRONG: "Product Manager", "Engineering Manager"
+   ✅ CORRECT: "Senior Product Strategist", "Principal Engineer"
 
-3. 🛑 ABSOLUTE CEILING: NO role may exceed Senior IC level (Level 3-4) for most users.
+2. 👤 IC TRACK ONLY: Use Individual Contributor titles
+   - Junior → Mid → Senior → Staff → Principal → Distinguished
 
-4. 🔗 GRAPH STRUCTURE: You MUST provide a "links" array for each path.
+3. 🛑 LEVEL CEILING: Maximum +2 levels from current
 
-STEP 1: SYNTHESIS ANALYSIS
-- Analyze the user's core strengths from their CV and chat answers.
-- Identify their latent potential (skills they have but might not realize apply elsewhere).
-- Determine their "Career Gravity" (what they naturally gravitate towards).
+4. 🔗 LINKS REQUIRED: Each path needs a "links" array
 
-STEP 2: INFER CURRENT EXPERIENCE LEVEL
-Based on their CV, classify their current experience level:
-- Level 1 (Associate/Entry): 0-2 years experience, junior roles
-- Level 2 (Mid-Level): 2-5 years, solid performer
-- Level 3 (Senior IC): 5-8 years, expert in domain
-- Level 4 (Lead/Principal): 8-12 years, guiding others
-- Level 5 (Manager): People management responsibility
-- Level 6 (Director/Senior Manager): Managing managers
-- Level 7+ (VP/Executive): Strategic leadership
+---
 
-STEP 3: GENERATE 3 PATHS (WITH LEVEL CONSTRAINTS)
-⚠️ CRITICAL RULE: Each path must follow REALISTIC PROGRESSION:
-- Direct Fit: Maximum +1 level jump (e.g., Level 2 → Level 3)
-- Strategic Pivot: Same level, different domain (e.g., Level 3 Engineer → Level 3 PM)
-- Aspirational: Maximum +2 levels BUT with explicit skill gaps noted (e.g., Level 2 → Level 4)
+STEP 0: DOMAIN & PROFILE ANALYSIS (CRITICAL FIRST STEP)
+Analyze the CV to determine:
 
-❌ NEVER suggest roles more than 2 levels above current level
-❌ NEVER skip intermediate steps (e.g., don't go from Junior → Director)
-✅ ALWAYS include intermediate roles in pathNodes (e.g., Junior → Mid → Senior)
+A. PRIMARY DOMAIN
+- What industry/sector? (Technology, Business, Healthcare, Finance, etc.)
+- What function? (Product, Operations, Engineering, Strategy, Consulting, etc.)
 
-Path Types:
-1. Direct Fit: The logical next step, elevated by 1 level (e.g., Mid Developer → Senior Developer).
-2. Strategic Pivot: A lateral move (same level) leveraging existing skills (e.g., Engineer → Product Manager).
-3. Aspirational: A stretch goal (+2 levels max) with clear skill gaps (e.g., Senior IC → Lead, noting "Needs: Team leadership experience").
+B. SKILLS INVENTORY
+- List TOP 5 transferable skills
+- Technical vs. Soft skills ratio
+
+C. CAREER TRAJECTORY DETECTION
+- Is there a clear progression pattern?
+- Are they pivoting or deepening expertise?
+
+🎯 ALL 3 PATHS MUST ALIGN WITH THIS DOMAIN unless user explicitly asks to pivot.
+
+---
+
+STEP 1: INFER CURRENT LEVEL (USE EXPLICIT EVIDENCE)
+
+LEVEL DETECTION RULES (BE CONSERVATIVE):
+- Level 1 (Associate/Entry): 
+  ✅ Job titles: "Associate", "Junior", "Coordinator", "Intern"
+  ✅ 0-2 years total experience
+  ✅ No leadership mentions
+  
+- Level 2 (Mid-Level):
+  ✅ 2-5 years experience
+  ✅ Solid performer, no "Senior" title yet
+  
+- Level 3 (Senior IC):
+  ✅ "Senior" in title
+  ✅ 5-8 years experience
+  ✅ Mentoring others
+
+🚨 DEFAULT TO LEVEL 1 if ambiguous - better to underestimate than overestimate
+
+---
+
+STEP 2: GENERATE EXACTLY 3 PATHS (NON-NEGOTIABLE)
+
+Path 1: DIRECT FIT
+- Maximum +1 level from current
+- Same domain and function
+- Example: "Business Analyst" → "Senior Business Analyst"
+
+Path 2: STRATEGIC PIVOT  
+- Same level, adjacent function within domain
+- Leverage transferable skills
+- Example: "Operations Analyst" → "Strategy Analyst" (both Business domain)
+
+Path 3: ASPIRATIONAL
+- Maximum +2 levels
+- Still within domain
+- Note explicit skill gaps
+- Example: "Junior Analyst" → "Principal Analyst" (but note: "Needs 3-5 more years experience")
+
+🎯 IF YOU CAN'T GENERATE 3 DISTINCT PATHS: Create variations (e.g., different specializations within same domain)
+
+---
+
+STEP 3: VALIDATE YOUR OUTPUT
+
+Before returning, check:
+✅ paths.length === 3?
+✅ All paths within detected domain?
+✅ No forbidden keywords?
+✅ currentLevel based on evidence?
+✅ Each path has links array?
+
+---
 
 Response format:
 Return a JSON object with this structure:
@@ -250,6 +291,38 @@ ${JSON.stringify(CAREER_GALAXY.nodes, (key, value) => {
         let finalMessage = '';
 
         if (careerData) {
+            // 🛡️ SERVER-SIDE VALIDATION
+            console.log('=== VALIDATING AI RESPONSE ===');
+
+            // VALIDATION 1: Enforce exactly 3 paths
+            if (!careerData.paths || !Array.isArray(careerData.paths)) {
+                console.error('❌ VALIDATION FAILED: Missing or invalid paths array');
+                careerData.paths = [];
+            } else if (careerData.paths.length !== 3) {
+                console.warn(`⚠️ VALIDATION WARNING: Expected 3 paths, got ${careerData.paths.length}`);
+                // Pad with dummy paths if < 3, truncate if > 3
+                while (careerData.paths.length < 3) {
+                    careerData.paths.push({
+                        type: careerData.paths.length === 1 ? "Strategic Pivot" : "Aspirational",
+                        reasoning: "Additional path variation",
+                        pathNodes: [],
+                        links: [],
+                        optimizedSearchQuery: ""
+                    });
+                }
+                if (careerData.paths.length > 3) {
+                    careerData.paths = careerData.paths.slice(0, 3);
+                }
+            }
+
+            // VALIDATION 2: Cap currentLevel if unreasonably high
+            if (careerData.currentLevel && careerData.currentLevel > 4) {
+                console.warn(`⚠️ VALIDATION WARNING: currentLevel ${careerData.currentLevel} seems high, capping at 3`);
+                careerData.currentLevel = 3;
+            }
+
+            console.log('✅ Validation complete. Paths:', careerData.paths.length);
+
             // Use the message from the JSON, or a default success message
             finalMessage = careerData.message || "I've analyzed your profile and generated personalized career paths. Explore them in the galaxy view!";
 
