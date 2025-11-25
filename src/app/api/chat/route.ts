@@ -1,0 +1,315 @@
+import { NextRequest, NextResponse } from 'next/server';
+import Anthropic from '@anthropic-ai/sdk';
+import { prisma } from '@/lib/prisma';
+import { CAREER_GALAXY } from '@/data/careerGalaxyData';
+
+export const maxDuration = 60;
+
+// Initialize Anthropic client
+const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+export async function POST(req: NextRequest) {
+    try {
+        const { messages, cvText, userId } = await req.json();
+
+        console.log('=== CHAT API REQUEST DEBUG ===');
+        console.log('Messages received:', messages.length);
+        console.log('User ID:', userId);
+
+        // Log message roles to see what's being counted
+        messages.forEach((m: any, i: number) => {
+            console.log(`Msg ${i}: role=${m.role}, content_len=${m.content?.length}`);
+        });
+
+        const userMessageCount = messages.filter((m: any) => m.role === 'user').length;
+        const shouldGeneratePaths = userMessageCount >= 3;
+
+        console.log('Calculated User Message Count:', userMessageCount);
+        console.log('Threshold: 3');
+        console.log('Should Generate Paths:', shouldGeneratePaths);
+
+        const basePrompt = `You are an expert career consultant AI. Your goal is to have a conversation with the user, then generate personalized career paths.
+        
+CRITICAL RULES:
+1. You MUST ask 3-4 probing questions before generating paths.
+2. Do NOT generate paths immediately.
+3. Ask about:
+   - Specific interests within their field
+   - Preferred work environment
+   - Long-term goals
+   - Values (e.g., impact, money, work-life balance)
+
+4. ONLY generate paths when you have enough information (usually after 3 user turns).
+5. When generating paths, you MUST use the JSON format below.`;
+
+        const conditionalPrompt = shouldGeneratePaths
+            ? `\n\nGENERATION PHASE:
+You have enough information. Generate 3 distinct career paths based on the user's profile and answers.
+STEP 1: SYNTHESIS ANALYSIS
+- Analyze the user's core strengths from their CV and chat answers.
+- Identify their latent potential (skills they have but might not realize apply elsewhere).
+- Determine their "Career Gravity" (what they naturally gravitate towards).
+
+STEP 2: INFER CURRENT EXPERIENCE LEVEL
+Based on their CV, classify their current experience level:
+- Level 1 (Associate/Entry): 0-2 years experience, junior roles
+- Level 2 (Mid-Level): 2-5 years, solid performer
+- Level 3 (Senior IC): 5-8 years, expert in domain
+- Level 4 (Lead/Principal): 8-12 years, guiding others
+- Level 5 (Manager): People management responsibility
+- Level 6 (Director/Senior Manager): Managing managers
+- Level 7+ (VP/Executive): Strategic leadership
+
+STEP 3: GENERATE 3 PATHS (WITH LEVEL CONSTRAINTS)
+⚠️ CRITICAL RULE: Each path must follow REALISTIC PROGRESSION:
+- Direct Fit: Maximum +1 level jump (e.g., Level 2 → Level 3)
+- Strategic Pivot: Same level, different domain (e.g., Level 3 Engineer → Level 3 PM)
+- Aspirational: Maximum +2 levels BUT with explicit skill gaps noted (e.g., Level 2 → Level 4)
+
+❌ NEVER suggest roles more than 2 levels above current level
+❌ NEVER skip intermediate steps (e.g., don't go from Junior → Director)
+✅ ALWAYS include intermediate roles in pathNodes (e.g., Junior → Mid → Senior)
+
+Path Types:
+1. Direct Fit: The logical next step, elevated by 1 level (e.g., Mid Developer → Senior Developer).
+2. Strategic Pivot: A lateral move (same level) leveraging existing skills (e.g., Engineer → Product Manager).
+3. Aspirational: A stretch goal (+2 levels max) with clear skill gaps (e.g., Senior IC → Lead, noting "Needs: Team leadership experience").
+
+Response format:
+Return a JSON object with this structure:
+{
+  "message": "A brief, encouraging summary of why you chose these paths (max 2 sentences).",
+  "synthesis_analysis": "Brief analysis of their profile...",
+  "currentLevel": 2, // Inferred experience level (1-7+)
+  "paths": [
+    {
+      "type": "Direct Fit",
+      "reasoning": "Why this fits...",
+      "levelJump": 1, // How many levels above current (0-2 only)
+      "nodeIds": ["id1", "id2"], // Legacy support
+      "pathNodes": [ // NEW: Dynamic node generation with FULL lineage
+         { "id": "unique-id-1", "name": "Mid-Level Developer", "level": 2 },
+         { "id": "unique-id-2", "name": "Senior Developer", "level": 3 }
+      ],
+      "optimizedSearchQuery": "Senior Software Engineer London"
+    },
+    ...
+  ],
+  "recommendedPath": ["id1", "id2"], // The IDs of the best path
+  "recommendationReason": "Why this is the #1 choice"
+}`
+            : `\n\nINFORMATION GATHERING PHASE:
+You need more information. Ask a follow-up question to understand the user better.
+- Be conversational and encouraging.
+- Do NOT generate JSON yet.
+- Keep response short (max 2 sentences).`;
+
+        const rulesPrompt = `\n\nHYBRID GENERATION RULES:
+- You can use existing nodes from the "CAREER GALAXY NODE STRUCTURE" below if they fit.
+- BUT you are encouraged to GENERATE NEW NODES if the user's niche isn't perfectly covered.
+- If generating new nodes, ensure they follow the level structure:
+  Level 3: Role Family (e.g., "FinTech Product", "Climate Tech Engineering")
+  Level 4: Job Title (e.g., "Senior Product Manager - Payments", "Carbon Capture Engineer")
+- Ensure "pathNodes" contains the full lineage for the path (e.g., Level 3 -> Level 4).
+
+CAREER GALAXY NODE STRUCTURE (Reference only):
+${JSON.stringify(CAREER_GALAXY.nodes, (key, value) => {
+            if (key === 'childIds' || key === 'parentId' || key === 'description') return undefined;
+            return value;
+        }).substring(0, 5000)}...`; // Truncate to save tokens
+
+        const systemPrompt = basePrompt + conditionalPrompt + rulesPrompt;
+
+        // Prepare messages for Claude
+        const claudeMessages = messages.map((m: any) => ({
+            role: m.role,
+            content: m.content
+        }));
+
+        // If we are in generation phase, force JSON mode by pre-filling the assistant response
+        if (shouldGeneratePaths) {
+            claudeMessages.push({
+                role: 'assistant',
+                content: 'Here is the personalized career galaxy JSON:\n\n```json\n{'
+            });
+        }
+
+        // Save user message to DB if we have a userId
+        if (userId) {
+            try {
+                await prisma.chatMessage.create({
+                    data: {
+                        userId,
+                        role: 'user',
+                        content: messages[messages.length - 1].content
+                    }
+                });
+            } catch (e) {
+                console.error('Failed to save user message:', e);
+            }
+        }
+
+        console.log('Calling Anthropic API...');
+        console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
+
+        const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 2048, // Increased for full JSON
+            system: systemPrompt,
+            messages: claudeMessages,
+        });
+
+        let content = response.content[0].type === 'text' ? response.content[0].text : '';
+
+        // Save assistant response to DB
+        if (userId) {
+            try {
+                await prisma.chatMessage.create({
+                    data: {
+                        userId,
+                        role: 'assistant',
+                        content: content
+                    }
+                });
+            } catch (e) {
+                console.error('Failed to save assistant message:', e);
+            }
+        }
+
+        // If we used pre-fill, we need to reconstruct the full JSON
+        if (shouldGeneratePaths) {
+            content = '{\n' + content; // Re-add the opening brace we pre-filled (minus the code block marker which we'll handle in extraction)
+            console.log('=== USING PRE-FILLED CONTENT ===');
+        }
+
+        // Extract JSON if present - try multiple aggressive patterns
+        let careerData = null;
+
+        console.log('=== EXTRACTING CAREER DATA ===');
+        console.log('Response content length:', content.length);
+        console.log('Content preview:', content.substring(0, 300));
+
+        // Pattern 1: Code-fenced JSON
+        let jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+        console.log('Pattern 1 (code fence) match:', !!jsonMatch);
+
+        // Pattern 2: Try without json keyword
+        if (!jsonMatch) {
+            jsonMatch = content.match(/```\s*([\s\S]*?)\s*```/);
+            console.log('Pattern 2 (plain fence) match:', !!jsonMatch);
+        }
+
+        // Pattern 3: Raw JSON object (more robust)
+        if (!jsonMatch) {
+            // Match any JSON object that contains "paths"
+            let match = content.match(/\{[\s\S]*"paths"\s*:\s*\[[\s\S]*?\][\s\S]*\}/);
+            if (match) {
+                jsonMatch = [match[0], match[0]];
+                console.log('Pattern 3 (raw JSON) found match');
+            }
+        }
+
+        // Parse the JSON if found
+        if (jsonMatch && jsonMatch[1]) {
+            console.log('📋 Found JSON, attempting parse...');
+            try {
+                const jsonStr = jsonMatch[1].trim();
+                const parsed = JSON.parse(jsonStr);
+                console.log('Parsed structure keys:', Object.keys(parsed));
+
+                // NEW FORMAT: Handle paths array
+                if (parsed.paths && Array.isArray(parsed.paths) && parsed.paths.length > 0) {
+                    const primaryPath = parsed.paths.find((p: any) => p.type === 'Direct Fit') || parsed.paths[0];
+
+                    // Extract nodeIds from pathNodes if available (new format), or use nodeIds directly (legacy)
+                    const nodeIds = primaryPath.pathNodes
+                        ? primaryPath.pathNodes.map((n: any) => n.id)
+                        : primaryPath.nodeIds;
+
+                    if (primaryPath && nodeIds) {
+                        careerData = {
+                            recommendedPath: {
+                                nodeIds: nodeIds,
+                                reasoning: primaryPath.reasoning
+                            },
+                            paths: parsed.paths,  // Store full paths array with pathNodes
+                            alternativePaths: parsed.paths.filter((p: any) => p.type !== 'Direct Fit')
+                        };
+                        console.log('✅ Valid paths array structure');
+                        console.log('Primary path IDs:', nodeIds);
+                        console.log('All paths:', parsed.paths.length);
+                    }
+                }
+                // LEGACY FORMAT: Handle single recommendedPath
+                else if (parsed.recommendedPath && parsed.recommendedPath.nodeIds) {
+                    careerData = parsed;
+                    console.log('✅ Valid legacy recommendedPath structure');
+                    console.log('Path IDs:', parsed.recommendedPath.nodeIds);
+                }
+                else {
+                    console.error('Invalid structure: missing paths array or recommendedPath.nodeIds');
+                }
+            } catch (e: any) {
+                console.error('❌ JSON parse failed:', e.message);
+            }
+        }
+
+        // Clean the message - remove all JSON
+        let cleanMessage = content;
+
+        // Remove code fences
+        cleanMessage = cleanMessage.replace(/```json[\s\S]*?```/g, '');
+        cleanMessage = cleanMessage.replace(/```[\s\S]*?```/g, '');
+
+        // Remove raw JSON objects (aggressive)
+        // Matches { "synthesis_analysis" ... } or { "paths" ... }
+        cleanMessage = cleanMessage.replace(/\{[\s\S]*"synthesis_analysis"[\s\S]*\}/g, '');
+        cleanMessage = cleanMessage.replace(/\{[\s\S]*"paths"[\s\S]*\}/g, '');
+        cleanMessage = cleanMessage.replace(/\{[\s\S]*"recommendedPath"[\s\S]*\}/g, '');
+
+        // Clean up extra characters
+        cleanMessage = cleanMessage.replace(/^\s*\}\s*\}\s*`*\s*$/gm, '');
+        cleanMessage = cleanMessage.trim();
+
+        // If we have career data, we want to keep the AI's natural response if it exists
+        // The AI might have answered a question before the JSON block
+        if (careerData && careerData.recommendedPath) {
+            // If the message is empty (AI only output JSON), add a friendly transition
+            if (!cleanMessage || cleanMessage.trim().length < 5) {
+                cleanMessage = "Perfect! I've analyzed your experience and created a personalized career path. Let me show you the galaxy view where you can explore your recommended route! 🌟";
+            }
+            // Otherwise, keep the AI's message (which might answer the user's question)
+        }
+
+        // Fallback if message is empty
+        if (!cleanMessage || cleanMessage.length < 10) {
+            cleanMessage = "I've generated your personalized career path. Let's explore it in the galaxy view!";
+        }
+
+        console.log('=== RESPONSE ===');
+        console.log('Has career data:', !!careerData);
+        console.log('Clean message:', cleanMessage);
+
+        // Return full paths array for multi-path visualization
+        return NextResponse.json({
+            message: cleanMessage,
+            paths: careerData?.paths || [],  // Return all 3 paths from careerData
+            recommendedPath: careerData?.recommendedPath?.nodeIds || [],  // Keep for backwards compatibility
+            recommendationReason: careerData?.recommendedPath?.reasoning || '',
+        });
+
+    } catch (error: any) {
+        console.error('=== ERROR IN CHAT API ===');
+        console.error('Error name:', error.name);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+
+        return NextResponse.json({
+            error: 'Failed to generate response',
+            details: error.message,
+            type: error.name
+        }, { status: 500 });
+    }
+}

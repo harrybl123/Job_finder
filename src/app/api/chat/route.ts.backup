@@ -1,0 +1,321 @@
+import { NextRequest, NextResponse } from 'next/server';
+import Anthropic from '@anthropic-ai/sdk';
+
+export const maxDuration = 60;
+
+// Initialize Anthropic client
+const anthropic = new Anthropic({
+    apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+export async function POST(req: NextRequest) {
+    try {
+        const { messages, cvText } = await req.json();
+
+        console.log('=== CHAT API REQUEST ===');
+        console.log('Messages count:', messages?.length);
+        console.log('CV Text length:', cvText?.length);
+
+        if (!messages || !Array.isArray(messages)) {
+            return NextResponse.json({ error: 'Invalid messages format' }, { status: 400 });
+        }
+
+        if (!cvText) {
+            return NextResponse.json({ error: 'CV text is required' }, { status: 400 });
+        }
+
+        const userMessageCount = messages.filter((m: any) => m.role === 'user').length;
+        const shouldGeneratePaths = userMessageCount >= 3;
+
+        console.log('User message count:', userMessageCount);
+        console.log('Should generate paths:', shouldGeneratePaths);
+
+        const systemPrompt = `You are an expert career consultant AI.Your goal is to have a conversation with the user, then generate personalized career paths.
+
+The user's CV:
+${cvText}
+
+Our conversation so far:
+${messages.map((m: any) => `${m.role === 'user' ? 'User' : 'You'}: ${m.content}`).join('\n')}
+
+TURN COUNT: This is turn ${userMessageCount}/3. ${shouldGeneratePaths ? 'You MUST generate the JSON now.' : 'Continue the conversation.'}
+
+CRITICAL RULES:
+1. ** ONLY use information from their ACTUAL CV ** - Do NOT invent companies, roles, or experience
+2. ** Have a 2 - 3 turn conversation ** to understand their goals
+3. ** After 2 - 3 exchanges, generate career paths in a SEPARATE message **
+    4. ** MATCH EXPERIENCE LEVEL ** - This is CRITICAL:
+- If they have 0 - 2 years experience → ONLY recommend entry - level / junior roles
+    - If they have 2 - 5 years experience → Recommend mid - level roles
+        - If they have 5 - 10 years experience → Recommend senior roles
+            - If they have 10 + years experience → Can recommend lead / management roles
+                - NEVER recommend senior / management roles to junior candidates
+                    - The recommended path MUST match their current experience level
+5. ** FORBIDDEN ROLES FOR JUNIOR / MID - LEVEL CANDIDATES ** - NEVER recommend:
+- C - Level: CEO, COO, CFO, CTO, CMO, CPO, Chief anything
+    - VP / Director: VP of anything, Director(unless 8 + years exp)
+        - Executive: "Executive", "Head of Department"(unless 6 + years exp)
+            - Examples of BAD recommendations: "Chief Operating Officer", "VP Sales", "Director of Engineering"
+                - Examples of GOOD recommendations for juniors: "Operations Coordinator", "Junior Analyst", "Associate"
+
+CONVERSATION PHASE (turns 1-3):
+- Ask about their interests, goals, and what they want to avoid
+- **Pay attention to their years of experience** from CV and conversation
+- Listen carefully to their responses
+- Build understanding of their aspirations AND experience level
+- **Count their actual years in workforce** - don't overestimate!
+
+GENERATION PHASE (after turn 3):
+When you're ready to recommend a career path, respond with ONLY a JSON code block, nothing else.
+
+YOUR TASK: Select the BEST path through our career galaxy that matches their CV and goals.
+
+**Critical Instructions:**
+1. **Analyze their CV carefully** - What's their current role? How many years experience?
+2. **Pick appropriate level** - Don't recommend senior roles to juniors!
+3. **Choose realistic progression** - Pick a path they can actually achieve
+4. **Use EXACT node IDs** from the list below - no making up IDs!
+5. **Path must be hierarchical** - Each ID must be a child of the previous
+
+**Response format:**
+\`\`\`json
+{
+  "recommendedPath": {
+    "nodeIds": ["sc-tech", "ind-software", "sub-web", "rf-web-senior", "job-web-senior-fe"],
+    "reasoning": "Based on your 3 years of React experience and TypeScript skills, this path leads to senior frontend roles within 2-3 years. Your current work on scalable web apps positions you well for this progression."
+  }
+}
+\`\`\`
+
+CAREER GALAXY NODE STRUCTURE - Use these EXACT IDs in recommendedPath.nodeIds:
+
+SUPER-CLUSTERS (Level 0) - Choose ONE:
+- sc-tech: Technology & Digital
+- sc-business: Business, Finance & Operations
+- sc-stem: STEM & Engineering
+- sc-healthcare: Healthcare, Science & Social Care
+- sc-creative: Creative, Media & Entertainment
+- sc-public: Public Sector & Non-Profit
+- sc-trade: Trade, Manufacturing & Logistics
+- sc-hospitality: Hospitality, Retail & Customer Service
+
+INDUSTRIES (Level 1) - Major examples:
+Technology: ind-software, ind-product, ind-data, ind-cybersecurity, ind-it, ind-ux, ind-digital-marketing
+Business: ind-accounting, ind-consulting, ind-sales, ind-hr, ind-marketing, ind-operations, ind-legal
+STEM: ind-civil, ind-mechanical, ind-electrical, ind-chemical, ind-research, ind-environmental
+
+SUB-INDUSTRIES (Level 2) - For Software Engineering:
+- sub-web: Web Development
+- sub-mobile: Mobile Development  
+- sub-backend: Backend Engineering
+- sub-frontend: Frontend Engineering
+- sub-fullstack: Full-Stack Development
+- sub-devops: DevOps & Cloud
+
+ROLE FAMILIES (Level 3) - For Web Dev:
+- rf-web-junior: Junior Web Developer
+- rf-web-mid: Web Developer
+- rf-web-senior: Senior Web Developer
+- rf-web-lead: Tech Lead
+- rf-web-manager: Engineering Manager
+
+JOB TITLES (Level 4) - Examples:
+- job-web-junior-fe: Junior Frontend Developer
+- job-web-senior-fe: Senior Frontend Developer
+- job-web-em: Engineering Manager
+
+CRITICAL FOR recommendedPath:
+- Must include 3-5 node IDs forming a complete path from super-cluster to job title
+- IDs must be from the EXACT list above
+- Path must be hierarchical (each node must be child of previous)
+- Choose the path that BEST matches their CV and goals
+- Include reasoning explaining why this specific path suits them
+
+Example paths:
+["sc-tech", "ind-software", "sub-web", "rf-web-senior", "job-web-senior-fe"]
+["sc-business", "ind-consulting", ...]
+["sc-stem", "ind-mechanical", ...]
+
+CRITICAL:
+- Base on ACTUAL CV only (no hallucinations)
+- MUST include recommendedPath with valid node IDs
+- When outputting JSON, include NOTHING else in that message
+`;
+
+        const claudeMessages = messages as any[];
+
+        // FORCE JSON GENERATION: If it's time to generate paths, pre-fill the assistant response
+        if (shouldGeneratePaths) {
+            claudeMessages.push({
+                role: 'assistant',
+                content: 'Here is the personalized career galaxy JSON:\n\n```json\n{'
+            });
+        }
+
+        console.log('Calling Anthropic API...');
+        console.log('API Key present:', !!process.env.ANTHROPIC_API_KEY);
+
+        const response = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 2048, // Increased for full JSON
+            system: systemPrompt,
+            messages: claudeMessages,
+        });
+
+        let content = response.content[0].type === 'text' ? response.content[0].text : '';
+
+        // If we used pre-fill, we need to reconstruct the full JSON
+        if (shouldGeneratePaths) {
+            content = '{\n' + content; // Re-add the opening brace we pre-filled (minus the code block marker which we'll handle in extraction)
+            console.log('=== USING PRE-FILLED CONTENT ===');
+        }
+
+        // Extract JSON if present - try multiple aggressive patterns
+        let careerData = null;
+
+        console.log('=== EXTRACTING CAREER DATA ===');
+        console.log('Response content length:', content.length);
+        console.log('Content preview:', content.substring(0, 300));
+
+        // Pattern 1: Code-fenced JSON
+        let jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
+        console.log('Pattern 1 (code fence) match:', !!jsonMatch);
+
+        // Pattern 2: Handle malformed output like `"json { ... }`
+        if (!jsonMatch) {
+            const match = content.match(/["']?json["']?\s*(\{[\s\S]*\})/i);
+            if (match && match[1]) {
+                jsonMatch = [match[0], match[1]];
+                console.log('Pattern 2 (json prefix) found JSON');
+            }
+        }
+
+        // Pattern 3: Find JSON starting with { and containing both currentRole and careerPaths
+        if (!jsonMatch) {
+            // Look for opening brace, then find the matching closing brace
+            const startIdx = content.indexOf('{'); // Changed to just {
+            if (startIdx !== -1) {
+                let braceCount = 0;
+                let inString = false;
+                let escapeNext = false;
+                let endIdx = -1;
+
+                for (let i = startIdx; i < content.length; i++) {
+                    const char = content[i];
+
+                    if (escapeNext) {
+                        escapeNext = false;
+                        continue;
+                    }
+
+                    if (char === '\\') {
+                        escapeNext = true;
+                        continue;
+                    }
+
+                    if (char === '"') {
+                        inString = !inString;
+                        continue;
+                    }
+
+                    if (!inString) {
+                        if (char === '{') braceCount++;
+                        if (char === '}') {
+                            braceCount--;
+                            if (braceCount === 0) {
+                                endIdx = i + 1;
+                                break;
+                            }
+                        }
+                    }
+                    if (!jsonMatch) {
+                        // Try without language specifier
+                        jsonMatch = content.match(/```\s*([\s\S]*?)\s*```/);
+                    }
+                    if (!jsonMatch) {
+                        // Try finding raw JSON object
+                        jsonMatch = content.match(/\{\s*"recommendedPath"\s*:\s*\{[\s\S]*?\}\s*\}/);
+                        if (jsonMatch) {
+                            jsonMatch = [jsonMatch[0], jsonMatch[0]]; // Format to match expected structure
+                        }
+                    }
+
+                    if (jsonMatch && jsonMatch[1]) {
+                        console.log('📋 Found JSON block, attempting parse...');
+                        try {
+                            const jsonStr = jsonMatch[1].trim();
+                            const parsed = JSON.parse(jsonStr);
+                            console.log('Parsed structure keys:', Object.keys(parsed));
+
+                            // Validate structure - now just checking for recommendedPath
+                            if (parsed.recommendedPath && parsed.recommendedPath.nodeIds) {
+                                careerData = parsed;
+                                console.log('✅ Validated recommendedPath structure');
+                                console.log('Path IDs:', parsed.recommendedPath.nodeIds);
+                                console.log('Reasoning:', parsed.recommendedPath.reasoning);
+                            } else {
+                                console.error('Invalid structure: missing recommendedPath.nodeIds');
+                            }
+                        } catch (e: any) {
+                            console.error('❌ JSON parse failed:', e.message);
+                            console.error('Failed JSON:', jsonMatch[1].substring(0, 500));
+                        }
+                    } else {
+                        console.log('❌ No JSON pattern matched in content');
+                    }
+
+                    // Clean the message - remove ALL JSON-related content
+                    let cleanMessage = content;
+
+                    // Remove code fences with JSON
+                    cleanMessage = cleanMessage.replace(/```json[\s\S]*?```/g, '');
+                    cleanMessage = cleanMessage.replace(/```[\s\S]*?```/g, '');
+
+                    // Remove remaining JSON objects
+                    cleanMessage = cleanMessage.replace(/\{\s*"recommendedPath"[\s\S]*?\}\s*\}/g, '');
+
+                    // Remove extra braces and backticks that might be left over
+                    cleanMessage = cleanMessage.replace(/^\s*\}\s*\}\s*`*\s*$/gm, '');
+                    cleanMessage = cleanMessage.trim();
+
+                    // If we extracted career data, show friendly message instead
+                    if (careerData && careerData.recommendedPath) {
+                        cleanMessage = "Perfect! I've analyzed your experience and created a personalized career path. Let me show you the galaxy view where you can explore your recommended route! 🌟";
+                    }
+
+                    // If message is empty after cleaning, provide default
+                    if (!cleanMessage || cleanMessage.length < 10) {
+                        cleanMessage = "I've generated your personalized career path. Let's explore it in the galaxy view!";
+                    }
+
+                    console.log('=== RESPONSE ===');
+                    console.log('Has career data:', !!careerData);
+                    console.log('Message length:', cleanMessage.length);
+
+                    // Return recommended path IDs (static galaxy will highlight them)
+                    return NextResponse.json({
+                        message: cleanMessage || content,
+                        recommendedPath: careerData?.recommendedPath?.nodeIds || [],
+                        recommendationReason: careerData?.recommendedPath?.reasoning || '',
+                    });
+
+                } catch (error: any) {
+                    console.error('=== ERROR IN CHAT API ===');
+                    console.error('Error name:', error.name);
+                    console.error('Error message:', error.message);
+                    console.error('Error stack:', error.stack);
+                    console.error('Full error:', error);
+
+                    // If it's an Anthropic API error, log more details
+                    if (error.status) {
+                        console.error('API Status:', error.status);
+                        console.error('API Error:', error.error);
+                    }
+
+                    return NextResponse.json({
+                        error: 'Failed to generate response',
+                        details: error.message,
+                        type: error.name
+                    }, { status: 500 });
+                }
+            }
