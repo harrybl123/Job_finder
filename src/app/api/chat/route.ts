@@ -336,6 +336,7 @@ ${JSON.stringify(CAREER_GALAXY.nodes, (key, value) => {
             paths: processedData.paths,
             recommendedPath: processedData.recommendedPath,
             recommendationReason: processedData.recommendationReason,
+            currentLevel: careerData?.currentLevel || null, // Pass user's experience level
         });
 
     } catch (error: any) {

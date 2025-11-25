@@ -25,6 +25,7 @@ export default function Home() {
   const [recommendedPath, setRecommendedPath] = useState<string[] | null>(null);
   const [recommendationReason, setRecommendationReason] = useState<string | null>(null);
   const [allPaths, setAllPaths] = useState<any[]>([]);
+  const [currentLevel, setCurrentLevel] = useState<number | null>(null);
 
   // Check for returning user on page load
   useEffect(() => {
@@ -129,6 +130,12 @@ export default function Home() {
 
   const handleSearchReady = (data: any) => {
     console.log('🔍 [page.tsx] handleSearchReady called with data:', data);
+
+    // Capture currentLevel if available
+    if (data.currentLevel) {
+      console.log('📊 [page.tsx] Setting current level:', data.currentLevel);
+      setCurrentLevel(data.currentLevel);
+    }
 
     // Capture paths array if available
     if (data.paths && data.paths.length > 0) {
@@ -302,6 +309,7 @@ export default function Home() {
                 onNodeClick={handleNodeClick}
                 paths={allPaths}  // Pass all 3 paths
                 recommendationReason={recommendationReason || undefined}
+                currentLevel={currentLevel || undefined}
               />
 
               {/* Floating Chat Bubble */}

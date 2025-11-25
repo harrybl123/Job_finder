@@ -25,6 +25,7 @@ interface CareerGalaxyProps {
         optimizedSearchQuery: string;
     }>;
     recommendationReason?: string; // Why this path is recommended
+    currentLevel?: number; // User's current experience level (1-7)
 }
 
 // Path type colors
@@ -34,7 +35,7 @@ const PATH_COLORS: Record<string, string> = {
     'Aspirational': '#8b5cf6'      // Purple
 };
 
-export default function CareerGalaxy({ data, onNodeClick, paths, recommendationReason }: CareerGalaxyProps) {
+export default function CareerGalaxy({ data, onNodeClick, paths, recommendationReason, currentLevel }: CareerGalaxyProps) {
     const { selectRole } = useConstellationStore();
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1144,8 +1145,13 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                         // Make recommended nodes larger
                         const size = isRecommended ? baseSize * 1.4 : baseSize;
 
-                        // Dim non-recommended nodes
-                        const opacity = isRecommended || isHovered ? 1 : 0.3;
+                        // 🎯 STRETCH GOAL DETECTION
+                        const isStretchGoal = currentLevel && node.level > currentLevel + 1;
+                        const isImmediateStep = currentLevel && node.level === currentLevel + 1;
+
+                        // Dim non-recommended nodes OR stretch goals
+                        const opacity = isRecommended || isHovered ?
+                            (isStretchGoal ? 0.5 : 1) : 0.3;
 
                         return (
                             <g
@@ -1160,14 +1166,15 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                                         ? 'brightness(1.3)'
                                         : isHovered
                                             ? 'url(#glow)'
-                                            : isRecommended
+                                            : isRecommended && !isStretchGoal
                                                 ? 'url(#pulse-glow)'
                                                 : 'none',
                                     opacity
                                 }}
                             >
                                 {/* Premium pulsing halos - Multi-path support */}
-                                {isRecommended && node.pathColors && node.pathColors.length > 0 && (
+                                {/* Only show animations for immediate next steps, not stretch goals */}
+                                {isRecommended && !isStretchGoal && node.pathColors && node.pathColors.length > 0 && (
                                     <>
                                         {/* Render pulse rings for each path this node belongs to */}
                                         {node.pathColors.map((color, pathIndex) => (
@@ -1227,15 +1234,16 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                                 <circle
                                     r={size}
                                     fill={node.color}
-                                    fillOpacity={isRecommended ? "0.75" : "0.6"}
+                                    fillOpacity={isStretchGoal ? "0.4" : (isRecommended ? "0.75" : "0.6")}
                                     stroke={node.color}
                                     strokeWidth={isRecommended ? 3 : 2}
-                                    strokeOpacity={1.0}
+                                    strokeOpacity={isStretchGoal ? 0.6 : 1.0}
+                                    strokeDasharray={isStretchGoal ? "8,4" : "none"}
                                     className="transition-all duration-200"
                                     style={{
                                         filter: isHovered
                                             ? 'brightness(1.4) drop-shadow(0 0 30px currentColor)'
-                                            : isRecommended
+                                            : isRecommended && !isStretchGoal
                                                 ? `brightness(1.2) drop-shadow(0 0 20px ${node.color})`
                                                 : 'brightness(1.0)',
                                         backdropFilter: 'blur(10px)'
@@ -1416,7 +1424,7 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
             </svg >
 
             {/* Controls */}
-            <div className="absolute top-4 right-4 flex flex-col gap-2 z-20">
+            <div className="absolute top-20 right-4 flex flex-col gap-2 z-20">
                 {/* Zoom In */}
                 <button
                     onClick={() => zoom('in')}
