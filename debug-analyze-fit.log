@@ -1,0 +1,5 @@
+[2025-11-26T15:49:51.406Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T15:49:51.406Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business, Finance & Operations"}
+[2025-11-26T15:49:51.409Z] 📄 CV Found for: "Harry Breeze-Lamb"
+[2025-11-26T15:49:51.409Z] 🤖 Calling Claude... 
+[2025-11-26T15:49:51.761Z] ❌ Analyze fit error: "404 {\"type\":\"error\",\"error\":{\"type\":\"not_found_error\",\"message\":\"model: claude-3-5-sonnet-20241022\"},\"request_id\":\"req_011CVWmNH9qdqN2Z3CZqdYW4\"}"

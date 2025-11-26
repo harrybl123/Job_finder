@@ -696,11 +696,11 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
             currentLevel
         });
 
-        // 🚨 TEMPORARY: Force trigger for testing
-        const shouldShowJobs = true; // ALWAYS trigger to test API
+        // Only trigger job search for ACTUAL JOB ROLES within reach
+        // OR if the user explicitly clicks an already-expanded node (forcing search)
+        const shouldShowJobs = (isJobRole && isRecommended && isWithinReach) || (isExpanded && nodeLevel >= 1);
 
         console.log('shouldShowJobs:', shouldShowJobs);
-        console.log('⚠️ TESTING MODE: Forcing job search for ALL nodes');
 
         if (shouldShowJobs) {
             console.log('🎯 Triggering job search for ROLE:', node.name);

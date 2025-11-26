@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         logToFile('🤖 Calling Claude...');
 
         const message = await anthropic.messages.create({
-            model: 'claude-3-5-sonnet-20241022',
+            model: 'claude-sonnet-4-20250514', // Updated to Sonnet 4
             max_tokens: 1500,
             messages: [{
                 role: 'user',
