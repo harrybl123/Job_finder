@@ -742,40 +742,15 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         // Open the panel immediately
         setSelectedJobNodeId(node.id);
 
-        // Fetch job count with AI analysis if not already loaded or loading
-        if (!jobCounts[node.id] && loadingJobCount !== node.id) {
+        // Fetch AI analysis of fit (but not job listings) if not already loaded
+        if (!jobCounts[node.id] && load ingJobCount !== node.id) {
             setLoadingJobCount(node.id);
 
             try {
                 const userId = getUserId();
 
-                if (!userId) {
-                    // Fall back to generic search
-                    const response = await fetch('/api/job-count', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            jobTitle: node.name,
-                            location: 'United Kingdom'
-                        })
-                    });
-
-                    if (response.ok) {
-                        const data = await response.json();
-                        setJobCounts(prev => ({
-                            ...prev,
-                            [node.id]: {
-                                count: data.count,
-                                jobs: data.jobs || [],
-                                loading: false
-                            }
-                        }));
-                    }
-                } else {
-                    // AI-powered search
-                    let intelligentQuery = null;
-                    let analysisData = null;
-
+                if (userId) {
+                    // Get AI-powered personalization insights
                     try {
                         const analysisResponse = await fetch('/api/analyze-fit', {
                             method: 'POST',
@@ -788,46 +763,38 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
                         if (analysisResponse.ok) {
                             const analysis = await analysisResponse.json();
-                            intelligentQuery = analysis.intelligentQuery;
-                            analysisData = analysis;
+                            setJobCounts(prev => ({
+                                ...prev,
+                                [node.id]: {
+                                    loading: false,
+                                    reasoning: analysis.reasoning,
+                                    keyStrengths: analysis.keyStrengths,
+                                    potentialGaps: analysis.potentialGaps
+                                }
+                            }));
                         } else {
-                            console.warn('Analyze fit failed, falling back to generic search');
+                            console.warn('Analyze fit failed');
+                            setJobCounts(prev => ({
+                                ...prev,
+                                [node.id]: { loading: false }
+                            }));
                         }
                     } catch (e) {
                         console.error('Analyze fit error:', e);
-                    }
-
-                    // Proceed to job search regardless of analysis success
-                    const jobResponse = await fetch('/api/job-count', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            intelligentQuery: intelligentQuery, // Can be null, API will handle it
-                            jobTitle: node.name, // Fallback
-                            location: 'United Kingdom'
-                        })
-                    });
-
-                    if (jobResponse.ok) {
-                        const data = await jobResponse.json();
                         setJobCounts(prev => ({
                             ...prev,
-                            [node.id]: {
-                                count: data.count,
-                                jobs: data.jobs || [],
-                                loading: false,
-                                // Only add analysis data if it exists
-                                ...(analysisData ? {
-                                    reasoning: analysisData.reasoning,
-                                    keyStrengths: analysisData.keyStrengths,
-                                    potentialGaps: analysisData.potentialGaps
-                                } : {})
-                            }
+                            [node.id]: { loading: false }
                         }));
                     }
+                } else {
+                    // No user ID - just show panel without personalization
+                    setJobCounts(prev => ({
+                        ...prev,
+                        [node.id]: { loading: false }
+                    }));
                 }
             } catch (error) {
-                console.error('Error in intelligent job search:', error);
+                console.error('Error fetching job analysis:', error);
             } finally {
                 setLoadingJobCount(null);
             }

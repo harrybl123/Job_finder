@@ -153,3 +153,36 @@
 [2025-11-26T16:47:09.440Z] ✅ Perplexity Raw Response: "```json\n{\n  \"count\": 1,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Proposition Strategy Analyst 2025\",\n      \"company\": \"Royal London Group\",\n      \"location\": \"London, United Kingdom\",\n      \"url\": \"ht..."
 [2025-11-26T16:47:09.441Z] 🤖 AI Query Result: {"count":1}
 [2025-11-26T16:47:09.441Z] ✅ Final Response: {"count":1,"jobs":1}
+[2025-11-26T16:50:04.000Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:50:04.001Z] Request params: {"jobTitle":"Product Strategy Analyst","intelligentQuery":"junior product strategy analyst roles London 2024 2025 startup tech experience economics graduate business development commercial strategy entry level associate consultant B2B SaaS fintech proptech career change transition","location":"United Kingdom"}
+[2025-11-26T16:50:04.002Z] 🤖 Attempting AI Query 
+[2025-11-26T16:50:04.002Z] 🔍 Querying Perplexity with: "junior product strategy analyst roles London 2024 2025 startup tech experience economics graduate business development commercial strategy entry level associate consultant B2B SaaS fintech proptech career change transition"
+[2025-11-26T16:50:09.414Z] ✅ Perplexity Raw Response: "```json\n{\n  \"count\": 0,\n  \"jobs\": []\n}\n```\n\nI cannot provide the requested job postings because the search results provided do not contain direct links to specific, active job postings that meet your ..."
+[2025-11-26T16:50:09.416Z] ❌ AI Query Failed: "Unexpected token I in JSON at position 32"
+[2025-11-26T16:50:09.416Z] ⚠️ No results. Falling back to generic query. 
+[2025-11-26T16:50:09.416Z] 🔍 Querying Perplexity with: "Product Strategy Analyst jobs"
+[2025-11-26T16:50:12.403Z] ✅ Perplexity Raw Response: "{\n  \"count\": 0,\n  \"jobs\": []\n}..."
+[2025-11-26T16:50:12.405Z] 🔎 Generic Query Result: {"count":0}
+[2025-11-26T16:50:12.406Z] ✅ Final Response: {"count":0,"jobs":0}
+[2025-11-26T16:50:17.957Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:50:17.957Z] Request params: {"jobTitle":"Business Operations Analyst","intelligentQuery":"Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background","location":"United Kingdom"}
+[2025-11-26T16:50:17.957Z] 🤖 Attempting AI Query 
+[2025-11-26T16:50:17.958Z] 🔍 Querying Perplexity with: "Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background"
+[2025-11-26T16:50:19.952Z] ✅ Perplexity Raw Response: "{\n  \"count\": 0,\n  \"jobs\": []\n}..."
+[2025-11-26T16:50:19.953Z] 🤖 AI Query Result: {"count":0}
+[2025-11-26T16:50:19.953Z] ⚠️ No results. Falling back to generic query. 
+[2025-11-26T16:50:19.953Z] 🔍 Querying Perplexity with: "Business Operations Analyst jobs"
+[2025-11-26T16:50:28.684Z] ✅ Perplexity Raw Response: "{\n  \"count\": 3,\n  \"jobs\": [\n    {\n      \"title\": \"Operations Analyst\",\n      \"company\": \"Morgan Hunt UK Ltd\",\n      \"location\": \"Glasgow, United Kingdom\",\n      \"url\": \"https://findajob.dwp.gov.uk/det..."
+[2025-11-26T16:50:28.686Z] 🔎 Generic Query Result: {"count":3}
+[2025-11-26T16:50:28.686Z] ✅ Final Response: {"count":3,"jobs":3}
+[2025-11-26T16:51:22.268Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:51:22.269Z] Request params: {"jobTitle":"Strategy Analyst","intelligentQuery":"Junior Strategy Analyst OR Associate Strategy Analyst roles London technology consulting startups SaaS fintech proptech insurtech entry level graduate economics business development commercial strategy client-facing analytical","location":"United Kingdom"}
+[2025-11-26T16:51:22.269Z] 🤖 Attempting AI Query 
+[2025-11-26T16:51:22.269Z] 🔍 Querying Perplexity with: "Junior Strategy Analyst OR Associate Strategy Analyst roles London technology consulting startups SaaS fintech proptech insurtech entry level graduate economics business development commercial strategy client-facing analytical"
+[2025-11-26T16:51:24.794Z] ✅ Perplexity Raw Response: "{\n  \"count\": 0,\n  \"jobs\": []\n}..."
+[2025-11-26T16:51:24.794Z] 🤖 AI Query Result: {"count":0}
+[2025-11-26T16:51:24.794Z] ⚠️ No results. Falling back to generic query. 
+[2025-11-26T16:51:24.794Z] 🔍 Querying Perplexity with: "Strategy Analyst jobs"
+[2025-11-26T16:51:31.594Z] ✅ Perplexity Raw Response: "{\n  \"count\": 4,\n  \"jobs\": [\n    {\n      \"title\": \"Strategy Analyst\",\n      \"company\": \"OVO Energy\",\n      \"location\": \"Bristol or London, United Kingdom\",\n      \"url\": \"https://www.jobsite.co.uk/job/s..."
+[2025-11-26T16:51:31.596Z] 🔎 Generic Query Result: {"count":4}
+[2025-11-26T16:51:31.596Z] ✅ Final Response: {"count":4,"jobs":4}

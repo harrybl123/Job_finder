@@ -81,3 +81,12 @@
 [2025-11-26T16:47:05.805Z] === NEW ANALYSIS REQUEST === 
 [2025-11-26T16:47:05.807Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Analyst"}
 [2025-11-26T16:47:05.849Z] ✅ Cache hit 
+[2025-11-26T16:50:03.729Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:50:03.730Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Product Strategy Analyst"}
+[2025-11-26T16:50:03.732Z] ✅ Cache hit 
+[2025-11-26T16:50:17.918Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:50:17.919Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Analyst"}
+[2025-11-26T16:50:17.927Z] ✅ Cache hit 
+[2025-11-26T16:51:22.211Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:51:22.213Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Analyst"}
+[2025-11-26T16:51:22.243Z] ✅ Cache hit 
