@@ -13,3 +13,23 @@
 [2025-11-26T15:55:11.288Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Product Strategy Analyst"}
 [2025-11-26T15:55:11.408Z] 📄 CV Found for: "Harry Breeze-Lamb"
 [2025-11-26T15:55:11.408Z] 🤖 Calling Claude... 
+[2025-11-26T15:55:18.383Z] ✅ Claude analysis complete 
+[2025-11-26T15:55:18.395Z] 💾 Analysis saved to cache 
+[2025-11-26T15:55:50.329Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T15:55:50.329Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Analyst"}
+[2025-11-26T15:55:50.335Z] 📄 CV Found for: "Harry Breeze-Lamb"
+[2025-11-26T15:55:50.336Z] 🤖 Calling Claude... 
+[2025-11-26T15:55:57.230Z] ✅ Claude analysis complete 
+[2025-11-26T15:55:57.235Z] 💾 Analysis saved to cache 
+[2025-11-26T15:56:51.116Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T15:56:51.119Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Associate"}
+[2025-11-26T15:56:51.138Z] 📄 CV Found for: "Harry Breeze-Lamb"
+[2025-11-26T15:56:51.138Z] 🤖 Calling Claude... 
+[2025-11-26T15:56:57.217Z] ✅ Claude analysis complete 
+[2025-11-26T15:56:57.234Z] 💾 Analysis saved to cache 
+[2025-11-26T15:58:03.063Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T15:58:03.066Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Associate"}
+[2025-11-26T15:58:03.108Z] 📄 CV Found for: "Harry Breeze-Lamb"
+[2025-11-26T15:58:03.108Z] 🤖 Calling Claude... 
+[2025-11-26T15:58:11.304Z] ✅ Claude analysis complete 
+[2025-11-26T15:58:11.317Z] 💾 Analysis saved to cache 

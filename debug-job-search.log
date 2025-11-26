@@ -19,3 +19,31 @@
 [2025-11-26T15:54:02.508Z] ✅ Perplexity Raw Response: "{\n  \"count\": 3,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Analyst (Fintech/Insurtech)\",\n      \"company\": \"Confidential Financial Services Company\",\n      \"location\": \"London, UK\",\n      \"url\": \"https:/..."
 [2025-11-26T15:54:02.509Z] 🤖 AI Query Result: {"count":3}
 [2025-11-26T15:54:02.509Z] ✅ Final Response: {"count":3,"jobs":3}
+[2025-11-26T15:55:18.747Z] === NEW SEARCH REQUEST === 
+[2025-11-26T15:55:18.747Z] Request params: {"jobTitle":"Product Strategy Analyst","intelligentQuery":"junior product strategy analyst roles London 2024 2025 startup tech experience economics graduate business development commercial strategy entry level associate consultant B2B SaaS fintech proptech career change transition","location":"United Kingdom"}
+[2025-11-26T15:55:18.747Z] 🤖 Attempting AI Query 
+[2025-11-26T15:55:18.747Z] 🔍 Querying Perplexity with: "junior product strategy analyst roles London 2024 2025 startup tech experience economics graduate business development commercial strategy entry level associate consultant B2B SaaS fintech proptech career change transition"
+[2025-11-26T15:55:27.806Z] ✅ Perplexity Raw Response: "{\n  \"count\": 8,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Product Analyst\",\n      \"company\": \"Just Eat\",\n      \"location\": \"London, United Kingdom\",\n      \"url\": \"https://www.brightnetwork.co.uk/gradua..."
+[2025-11-26T15:55:27.808Z] 🤖 AI Query Result: {"count":8}
+[2025-11-26T15:55:27.808Z] ✅ Final Response: {"count":8,"jobs":8}
+[2025-11-26T15:55:57.243Z] === NEW SEARCH REQUEST === 
+[2025-11-26T15:55:57.243Z] Request params: {"jobTitle":"Strategy Analyst","intelligentQuery":"Junior Strategy Analyst OR Associate Strategy Analyst roles London technology consulting startups SaaS fintech proptech insurtech entry level graduate economics business development commercial strategy client-facing analytical","location":"United Kingdom"}
+[2025-11-26T15:55:57.243Z] 🤖 Attempting AI Query 
+[2025-11-26T15:55:57.243Z] 🔍 Querying Perplexity with: "Junior Strategy Analyst OR Associate Strategy Analyst roles London technology consulting startups SaaS fintech proptech insurtech entry level graduate economics business development commercial strategy client-facing analytical"
+[2025-11-26T15:56:06.244Z] ✅ Perplexity Raw Response: "{\n  \"count\": 10,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Strategy Analyst\",\n      \"company\": \"Verisure\",\n      \"location\": \"London, United Kingdom\",\n      \"url\": \"https://builtin.com/job/junior-strat..."
+[2025-11-26T15:56:06.245Z] 🤖 AI Query Result: {"count":10}
+[2025-11-26T15:56:06.245Z] ✅ Final Response: {"count":10,"jobs":10}
+[2025-11-26T15:56:57.272Z] === NEW SEARCH REQUEST === 
+[2025-11-26T15:56:57.275Z] Request params: {"jobTitle":"Business Operations Associate","intelligentQuery":"Business Operations Associate London tech startup SaaS proptech junior mid-level economics graduate sales business development project management team leadership venture creation consultant 2024 2025","location":"United Kingdom"}
+[2025-11-26T15:56:57.275Z] 🤖 Attempting AI Query 
+[2025-11-26T15:56:57.275Z] 🔍 Querying Perplexity with: "Business Operations Associate London tech startup SaaS proptech junior mid-level economics graduate sales business development project management team leadership venture creation consultant 2024 2025"
+[2025-11-26T15:57:03.226Z] ✅ Perplexity Raw Response: "{\n  \"count\": 3,\n  \"jobs\": [\n    {\n      \"title\": \"Business Operations Associate\",\n      \"company\": \"Hyperlayer\",\n      \"location\": \"London, United Kingdom\",\n      \"url\": \"https://revpath.dealhub.io/jo..."
+[2025-11-26T15:57:03.227Z] 🤖 AI Query Result: {"count":3}
+[2025-11-26T15:57:03.227Z] ✅ Final Response: {"count":3,"jobs":3}
+[2025-11-26T15:58:11.340Z] === NEW SEARCH REQUEST === 
+[2025-11-26T15:58:11.341Z] Request params: {"jobTitle":"Strategy Associate","intelligentQuery":"Strategy Associate OR Strategic Analyst roles London entry-level junior consultant startup experience tech SaaS fintech proptech business development economics graduate 2024 2025 management consulting strategy consulting commercial strategy","location":"United Kingdom"}
+[2025-11-26T15:58:11.341Z] 🤖 Attempting AI Query 
+[2025-11-26T15:58:11.341Z] 🔍 Querying Perplexity with: "Strategy Associate OR Strategic Analyst roles London entry-level junior consultant startup experience tech SaaS fintech proptech business development economics graduate 2024 2025 management consulting strategy consulting commercial strategy"
+[2025-11-26T15:58:21.891Z] ✅ Perplexity Raw Response: "{\n  \"count\": 11,\n  \"jobs\": [\n    {\n      \"title\": \"Graduate Business Strategy Associate\",\n      \"company\": \"Confidential\",\n      \"location\": \"London, UK\",\n      \"url\": \"https://jobs.fox4kc.com/jobs/gr..."
+[2025-11-26T15:58:21.894Z] 🤖 AI Query Result: {"count":11}
+[2025-11-26T15:58:21.895Z] ✅ Final Response: {"count":11,"jobs":11}

@@ -55,7 +55,10 @@ export default function JobListPanel({
             />
 
             {/* Panel */}
-            <div className="fixed right-0 top-0 h-full w-full max-w-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 shadow-2xl z-50 overflow-y-auto animate-slide-in-right">
+            <div
+                className="fixed right-0 top-0 h-full w-full max-w-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 shadow-2xl z-50 overflow-y-auto overscroll-contain animate-slide-in-right"
+                onWheel={(e) => e.stopPropagation()}
+            >
 
                 {/* Header */}
                 <div className="sticky top-0 bg-slate-900/95 backdrop-blur-lg border-b border-white/10 p-6 flex items-start justify-between z-10">
