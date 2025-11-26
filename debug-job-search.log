@@ -12,3 +12,10 @@
 [2025-11-26T15:49:55.491Z] ✅ Perplexity Raw Response: "{\n  \"count\": 0,\n  \"jobs\": []\n}..."
 [2025-11-26T15:49:55.500Z] 🔎 Generic Query Result: {"count":0}
 [2025-11-26T15:49:55.501Z] ✅ Final Response: {"count":0,"jobs":0}
+[2025-11-26T15:53:53.887Z] === NEW SEARCH REQUEST === 
+[2025-11-26T15:53:53.888Z] Request params: {"jobTitle":"Business Operations Analyst","intelligentQuery":"Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background","location":"United Kingdom"}
+[2025-11-26T15:53:53.888Z] 🤖 Attempting AI Query 
+[2025-11-26T15:53:53.888Z] 🔍 Querying Perplexity with: "Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background"
+[2025-11-26T15:54:02.508Z] ✅ Perplexity Raw Response: "{\n  \"count\": 3,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Analyst (Fintech/Insurtech)\",\n      \"company\": \"Confidential Financial Services Company\",\n      \"location\": \"London, UK\",\n      \"url\": \"https:/..."
+[2025-11-26T15:54:02.509Z] 🤖 AI Query Result: {"count":3}
+[2025-11-26T15:54:02.509Z] ✅ Final Response: {"count":3,"jobs":3}

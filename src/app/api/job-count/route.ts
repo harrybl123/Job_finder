@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
       ]
     }
     
-    Include up to 10 recent, relevant job listings. If no jobs found, return count: 0 and empty jobs array.`
+    Include up to 20 recent, relevant job listings. If no jobs found, return count: 0 and empty jobs array.`
                     }],
                     temperature: 0.2
                 })
