@@ -686,9 +686,16 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         // EXPAND CHILDREN (First click on parent nodes)
         if (shouldExpand) {
             console.log('📂 Expanding node:', node.name);
+
+            // Mark as expanded
             const newExpanded = new Set(expandedNodeIds);
             newExpanded.add(node.id);
             setExpandedNodeIds(newExpanded);
+
+            // Make children visible
+            const newVisible = new Set(visibleNodeIds);
+            node.childIds.forEach((childId: string) => newVisible.add(childId));
+            setVisibleNodeIds(newVisible);
 
             selectRole(node.id);
             if (onNodeClick) onNodeClick({ type: 'category', ...node });

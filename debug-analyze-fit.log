@@ -33,3 +33,21 @@
 [2025-11-26T15:58:03.108Z] 🤖 Calling Claude... 
 [2025-11-26T15:58:11.304Z] ✅ Claude analysis complete 
 [2025-11-26T15:58:11.317Z] 💾 Analysis saved to cache 
+[2025-11-26T16:03:41.832Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:03:41.833Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Associate"}
+[2025-11-26T16:03:41.863Z] ✅ Cache hit 
+[2025-11-26T16:03:44.126Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:03:44.127Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business, Finance & Operations"}
+[2025-11-26T16:03:44.132Z] 📄 CV Found for: "Harry Breeze-Lamb"
+[2025-11-26T16:03:44.132Z] 🤖 Calling Claude... 
+[2025-11-26T16:03:46.486Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:03:46.486Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Analyst"}
+[2025-11-26T16:03:46.488Z] ✅ Cache hit 
+[2025-11-26T16:03:52.331Z] ✅ Claude analysis complete 
+[2025-11-26T16:03:52.342Z] 💾 Analysis saved to cache 
+[2025-11-26T16:04:39.110Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:04:39.115Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Technology & Digital"}
+[2025-11-26T16:04:39.168Z] 📄 CV Found for: "Harry Breeze-Lamb"
+[2025-11-26T16:04:39.168Z] 🤖 Calling Claude... 
+[2025-11-26T16:04:46.385Z] ✅ Claude analysis complete 
+[2025-11-26T16:04:46.396Z] 💾 Analysis saved to cache 

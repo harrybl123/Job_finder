@@ -47,3 +47,28 @@
 [2025-11-26T15:58:21.891Z] ✅ Perplexity Raw Response: "{\n  \"count\": 11,\n  \"jobs\": [\n    {\n      \"title\": \"Graduate Business Strategy Associate\",\n      \"company\": \"Confidential\",\n      \"location\": \"London, UK\",\n      \"url\": \"https://jobs.fox4kc.com/jobs/gr..."
 [2025-11-26T15:58:21.894Z] 🤖 AI Query Result: {"count":11}
 [2025-11-26T15:58:21.895Z] ✅ Final Response: {"count":11,"jobs":11}
+[2025-11-26T16:03:42.100Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:03:42.101Z] Request params: {"jobTitle":"Business Operations Associate","intelligentQuery":"Business Operations Associate London tech startup SaaS proptech junior mid-level economics graduate sales business development project management team leadership venture creation consultant 2024 2025","location":"United Kingdom"}
+[2025-11-26T16:03:42.101Z] 🤖 Attempting AI Query 
+[2025-11-26T16:03:42.101Z] 🔍 Querying Perplexity with: "Business Operations Associate London tech startup SaaS proptech junior mid-level economics graduate sales business development project management team leadership venture creation consultant 2024 2025"
+[2025-11-26T16:03:46.498Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:03:46.498Z] Request params: {"jobTitle":"Business Operations Analyst","intelligentQuery":"Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background","location":"United Kingdom"}
+[2025-11-26T16:03:46.498Z] 🤖 Attempting AI Query 
+[2025-11-26T16:03:46.498Z] 🔍 Querying Perplexity with: "Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background"
+[2025-11-26T16:03:48.584Z] ✅ Perplexity Raw Response: "{\n  \"count\": 4,\n  \"jobs\": [\n    {\n      \"title\": \"Business Operations Associate\",\n      \"company\": \"Hyperlayer\",\n      \"location\": \"London, United Kingdom\",\n      \"url\": \"https://revpath.dealhub.io/jo..."
+[2025-11-26T16:03:48.585Z] 🤖 AI Query Result: {"count":4}
+[2025-11-26T16:03:48.585Z] ✅ Final Response: {"count":4,"jobs":4}
+[2025-11-26T16:03:52.372Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:03:52.372Z] Request params: {"jobTitle":"Business, Finance & Operations","intelligentQuery":"Business development analyst operations consultant roles London tech startups SaaS fintech junior mid-level economics graduate revenue operations commercial strategy analyst venture capital growth stage companies 1-3 years experience","location":"United Kingdom"}
+[2025-11-26T16:03:52.372Z] 🤖 Attempting AI Query 
+[2025-11-26T16:03:52.372Z] 🔍 Querying Perplexity with: "Business development analyst operations consultant roles London tech startups SaaS fintech junior mid-level economics graduate revenue operations commercial strategy analyst venture capital growth stage companies 1-3 years experience"
+[2025-11-26T16:03:54.468Z] ✅ Perplexity Raw Response: "{\n  \"count\": 7,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Analyst (Fintech/Insurtech)\",\n      \"company\": \"Confidential Financial Services Company\",\n      \"location\": \"London, UK\",\n      \"url\": \"https:/..."
+[2025-11-26T16:03:54.469Z] 🤖 AI Query Result: {"count":7}
+[2025-11-26T16:03:54.469Z] ✅ Final Response: {"count":7,"jobs":7}
+[2025-11-26T16:04:00.112Z] ✅ Perplexity Raw Response: "{\n  \"count\": 7,\n  \"jobs\": [\n    {\n      \"title\": \"Graduate Technical Business Analyst\",\n      \"company\": \"Insurance Software Specialist (undisclosed)\",\n      \"location\": \"London, UK\",\n      \"url\": \"ht..."
+[2025-11-26T16:04:00.113Z] 🤖 AI Query Result: {"count":7}
+[2025-11-26T16:04:00.113Z] ✅ Final Response: {"count":7,"jobs":7}
+[2025-11-26T16:04:46.424Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:04:46.426Z] Request params: {"jobTitle":"Technology & Digital","intelligentQuery":"Technology sales business development consultant roles London junior mid-level B2B SaaS fintech proptech startup experience economics graduate 2024 2025","location":"United Kingdom"}
+[2025-11-26T16:04:46.426Z] 🤖 Attempting AI Query 
+[2025-11-26T16:04:46.426Z] 🔍 Querying Perplexity with: "Technology sales business development consultant roles London junior mid-level B2B SaaS fintech proptech startup experience economics graduate 2024 2025"
