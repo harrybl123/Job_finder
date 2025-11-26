@@ -668,21 +668,27 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         // 1. Explicit AI tag "ROLE"
         // 2. Fallback: Level >= 3 (Senior/Lead roles usually)
         // 3. Fallback: Leaf node (no children)
+        // 4. NEW: If node is already expanded, treat second click as "I want jobs for this"
+        const isExpanded = expandedNodeIds.has(node.id);
+
         const isJobRole =
             node.type === 'ROLE' ||
             (!node.type && nodeLevel >= 3) ||
-            (node.childIds && node.childIds.length === 0);
+            (node.childIds && node.childIds.length === 0) ||
+            (isExpanded && nodeLevel >= 1); // Allow searching for categories if clicked twice (but not super clusters)
 
         const isRecommended = node.recommended === true;
 
         // 📏 REACHABILITY CHECK
         // Allow clicking if within 2 levels OR if user level is unknown (0)
-        const isWithinReach = userLevel === 0 || (nodeLevel <= userLevel + 2);
+        // 🛡️ FIX: Check for undefined/null explicitly, as 0 is a valid level!
+        const isWithinReach = (currentLevel === undefined || currentLevel === null) || (nodeLevel <= userLevel + 2);
 
-        console.log('Checks:', { isJobRole, isRecommended, isWithinReach });
+        console.log('Checks:', { isJobRole, isRecommended, isWithinReach, isExpanded });
 
         // Only trigger job search for ACTUAL JOB ROLES within reach
-        const shouldShowJobs = isJobRole && isRecommended && isWithinReach;
+        // OR if the user explicitly clicks an already-expanded node (forcing search)
+        const shouldShowJobs = (isJobRole && isRecommended && isWithinReach) || (isExpanded && nodeLevel >= 1);
 
         if (shouldShowJobs) {
             console.log('🎯 Triggering job search for ROLE:', node.name);
@@ -768,8 +774,8 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
             }
             return;
         }
+
         // Toggle expansion logic
-        const isExpanded = expandedNodeIds.has(node.id);
         const childIds = node.childIds;
 
         if (isExpanded) {
