@@ -63,3 +63,15 @@
 [2025-11-26T16:28:23.999Z] === NEW ANALYSIS REQUEST === 
 [2025-11-26T16:28:24.002Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Technology & Digital"}
 [2025-11-26T16:28:24.040Z] ✅ Cache hit 
+[2025-11-26T16:31:02.226Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:31:02.227Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Analyst"}
+[2025-11-26T16:31:02.229Z] ✅ Cache hit 
+[2025-11-26T16:32:56.744Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:32:56.746Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business, Finance & Operations"}
+[2025-11-26T16:32:56.794Z] ✅ Cache hit 
+[2025-11-26T16:33:02.317Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:33:02.318Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Associate"}
+[2025-11-26T16:33:02.324Z] ✅ Cache hit 
+[2025-11-26T16:33:37.767Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:33:37.768Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Associate"}
+[2025-11-26T16:33:37.776Z] ✅ Cache hit 

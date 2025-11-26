@@ -665,28 +665,57 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
         console.log('Click Analysis:', {
             node: node.name,
+            nodeLevel,
+            userLevel,
             isExpanded,
             hasChildren,
             isRecommended,
-            isWithinReach,
-            nodeLevel,
-            userLevel
+            isWithinReach
         });
 
-        // ✨ CLEAR CLICK BEHAVIOR:
-        // 1. If node has children AND is NOT expanded → Expand it (reveal children)
-        // 2. If node has children AND IS expanded AND is a job role (level >= 3) → Open job board
-        // 3. If node has NO children (leaf) AND is a job role → Open job board immediately
-        // 4. Super clusters (level 0-2) should NEVER trigger job search
+        // 🎯 SIMPLE DECISION TREE:
+        // 
+        // Has children? 
+        //   Yes → Already expanded?
+        //     Yes → Is it a job role (level >= 3) AND recommended?
+        //       Yes → OPEN JOB BOARD
+        //       No  → DO NOTHING (super clusters don't have job boards)
+        //     No  → EXPAND (show children)
+        //   No  → Is it a job role (level >= 3) AND recommended?
+        //     Yes → OPEN JOB BOARD
+        //     No  → DO NOTHING
 
-        const shouldExpand = hasChildren && !isExpanded;
-        const isJobRole = nodeLevel >= 3; // Only level 3+ are actual job roles
-        const shouldShowJobs = !shouldExpand && isRecommended && isWithinReach && isJobRole;
+        let action: 'EXPAND' | 'JOB_SEARCH' | 'NOTHING';
 
-        console.log('Decision:', { shouldExpand, shouldShowJobs });
+        if (hasChildren) {
+            if (isExpanded) {
+                // Second click on expanded node
+                if (nodeLevel >= 3 && isRecommended && isWithinReach) {
+                    action = 'JOB_SEARCH';
+                } else {
+                    action = 'NOTHING';
+                }
+            } else {
+                // First click - expand
+                action = 'EXPAND';
+            }
+        } else {
+            // Leaf node
+            if (nodeLevel >= 3 && isRecommended && isWithinReach) {
+                action = 'JOB_SEARCH';
+            } else {
+                action = 'NOTHING';
+            }
+        }
 
-        // EXPAND CHILDREN (First click on parent nodes)
-        if (shouldExpand) {
+        console.log('🎬 Action:', action);
+
+        if (action === 'NOTHING') {
+            console.log('⏸️ No action taken');
+            return;
+        }
+
+        if (action === 'EXPAND') {
             console.log('📂 Expanding node:', node.name);
 
             // Find siblings (nodes at same level with same parent)
@@ -727,8 +756,8 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
             return; // Don't continue to job search
         }
 
-        // OPEN JOB BOARD (Second click or leaf nodes)
-        console.log('🎯 Triggering job search for ROLE:', node.name);
+        // OPEN JOB BOARD (action === 'JOB_SEARCH')
+        console.log('🎯 Opening job board for:', node.name);
         selectRole(node.id);
         if (onNodeClick) onNodeClick({ type: 'role', ...node });
 
