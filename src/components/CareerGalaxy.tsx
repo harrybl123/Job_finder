@@ -16,6 +16,7 @@ interface CareerGalaxyProps {
             id: string;
             name: string;
             level: number;
+            type?: 'ROLE' | 'CATEGORY'; // AI tags each node
         }>;
         links?: Array<{         // Explicit graph connections
             source: string;
@@ -632,7 +633,11 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         // The AI tags each node as "ROLE" (job title) or "CATEGORY" (grouping)
         const isJobRole = node.type === 'ROLE';
         const isRecommended = node.recommended === true;
-        const isWithinReach = currentLevel ? (node.level <= currentLevel + 2) : true;
+
+        // 🛡️ DEFENSIVE: Ensure numeric comparison (in case of type coercion)
+        const nodeLevelNum = Number(node.level) || 0;
+        const currentLevelNum = Number(currentLevel) || 0;
+        const isWithinReach = currentLevel ? (nodeLevelNum <= currentLevelNum + 2) : true;
 
         // Only trigger job search for ACTUAL JOB ROLES within reach
         const shouldShowJobs = isJobRole && isRecommended && isWithinReach;
@@ -1160,8 +1165,11 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                         const size = isRecommended ? baseSize * 1.4 : baseSize;
 
                         // 🎯 STRETCH GOAL DETECTION
-                        const isStretchGoal = currentLevel && node.level > currentLevel + 1;
-                        const isImmediateStep = currentLevel && node.level === currentLevel + 1;
+                        // 🛡️ DEFENSIVE: Ensure numeric comparison for visual styling
+                        const nodeLevelNum = Number(node.level) || 0;
+                        const currentLevelNum = Number(currentLevel) || 0;
+                        const isStretchGoal = currentLevel && nodeLevelNum > currentLevelNum + 1;
+                        const isImmediateStep = currentLevel && nodeLevelNum === currentLevelNum + 1;
 
                         // Dim non-recommended nodes OR stretch goals
                         const opacity = isRecommended || isHovered ?
