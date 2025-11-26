@@ -629,6 +629,14 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
     // Handle node click - reveal children or trigger job search
     const handleNodeClickInternal = async (node: PositionedNode) => {
+        // 🔍 DIAGNOSTIC LOGGING
+        console.log('=== NODE CLICKED ===');
+        console.log('Node name:', node.name);
+        console.log('Node type:', node.type, '(should be "ROLE" or "CATEGORY")');
+        console.log('Node level:', node.level);
+        console.log('Node recommended:', node.recommended);
+        console.log('Current level (user):', currentLevel);
+
         // ✨ NEW LOGIC: Use explicit AI tagging to determine if this is a job role
         // The AI tags each node as "ROLE" (job title) or "CATEGORY" (grouping)
         const isJobRole = node.type === 'ROLE';
@@ -638,6 +646,12 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         const nodeLevelNum = Number(node.level) || 0;
         const currentLevelNum = Number(currentLevel) || 0;
         const isWithinReach = currentLevel ? (nodeLevelNum <= currentLevelNum + 2) : true;
+
+        console.log('Computed flags:');
+        console.log('  isJobRole:', isJobRole, '(type === "ROLE"?)');
+        console.log('  isRecommended:', isRecommended);
+        console.log('  isWithinReach:', isWithinReach, `(${nodeLevelNum} <= ${currentLevelNum} + 2)`);
+        console.log('  shouldShowJobs:', isJobRole && isRecommended && isWithinReach);
 
         // Only trigger job search for ACTUAL JOB ROLES within reach
         const shouldShowJobs = isJobRole && isRecommended && isWithinReach;
