@@ -639,7 +639,8 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
         // ✨ NEW LOGIC: Use explicit AI tagging to determine if this is a job role
         // The AI tags each node as "ROLE" (job title) or "CATEGORY" (grouping)
-        const isJobRole = node.type === 'ROLE';
+        // 🛡️ FALLBACK: If type is missing (old AI response), use level >= 3 as proxy
+        const isJobRole = node.type === 'ROLE' || (!node.type && Number(node.level) >= 3);
         const isRecommended = node.recommended === true;
 
         // 🛡️ DEFENSIVE: Ensure numeric comparison (in case of type coercion)
