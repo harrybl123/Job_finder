@@ -51,3 +51,15 @@
 [2025-11-26T16:04:39.168Z] 🤖 Calling Claude... 
 [2025-11-26T16:04:46.385Z] ✅ Claude analysis complete 
 [2025-11-26T16:04:46.396Z] 💾 Analysis saved to cache 
+[2025-11-26T16:26:14.309Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:26:14.309Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Analyst"}
+[2025-11-26T16:26:14.313Z] ✅ Cache hit 
+[2025-11-26T16:26:27.669Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:26:27.669Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Product Strategy Analyst"}
+[2025-11-26T16:26:27.670Z] ✅ Cache hit 
+[2025-11-26T16:26:52.624Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:26:52.624Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business, Finance & Operations"}
+[2025-11-26T16:26:52.631Z] ✅ Cache hit 
+[2025-11-26T16:28:23.999Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:28:24.002Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Technology & Digital"}
+[2025-11-26T16:28:24.040Z] ✅ Cache hit 

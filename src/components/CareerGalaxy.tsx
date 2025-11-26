@@ -675,11 +675,13 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
         // ✨ CLEAR CLICK BEHAVIOR:
         // 1. If node has children AND is NOT expanded → Expand it (reveal children)
-        // 2. If node has children AND IS expanded → Open job board
-        // 3. If node has NO children (leaf) → Open job board immediately
+        // 2. If node has children AND IS expanded AND is a job role (level >= 3) → Open job board
+        // 3. If node has NO children (leaf) AND is a job role → Open job board immediately
+        // 4. Super clusters (level 0-2) should NEVER trigger job search
 
         const shouldExpand = hasChildren && !isExpanded;
-        const shouldShowJobs = !shouldExpand && isRecommended && isWithinReach;
+        const isJobRole = nodeLevel >= 3; // Only level 3+ are actual job roles
+        const shouldShowJobs = !shouldExpand && isRecommended && isWithinReach && isJobRole;
 
         console.log('Decision:', { shouldExpand, shouldShowJobs });
 
@@ -687,15 +689,38 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         if (shouldExpand) {
             console.log('📂 Expanding node:', node.name);
 
-            // Mark as expanded
-            const newExpanded = new Set(expandedNodeIds);
-            newExpanded.add(node.id);
-            setExpandedNodeIds(newExpanded);
+            // Find siblings (nodes at same level with same parent)
+            const siblings = allPositionedNodes.allNodes.filter((n: PositionedNode) =>
+                n.parentId === node.parentId && n.id !== node.id
+            );
 
-            // Make children visible
+            // Collapse siblings and remove their descendants
+            const nodesToRemove = new Set<string>();
+            const removeDescendants = (nodeId: string) => {
+                const nodeToRemove = allPositionedNodes.allNodes.find((n: PositionedNode) => n.id === nodeId);
+                if (nodeToRemove && nodeToRemove.childIds) {
+                    nodesToRemove.add(nodeId);
+                    nodeToRemove.childIds.forEach((childId: string) => removeDescendants(childId));
+                }
+            };
+
+            siblings.forEach(sibling => {
+                if (expandedNodeIds.has(sibling.id) && sibling.childIds) {
+                    sibling.childIds.forEach((childId: string) => removeDescendants(childId));
+                }
+            });
+
+            // Update visible nodes: remove sibling descendants, add our children
             const newVisible = new Set(visibleNodeIds);
+            nodesToRemove.forEach(id => newVisible.delete(id));
             node.childIds.forEach((childId: string) => newVisible.add(childId));
             setVisibleNodeIds(newVisible);
+
+            // Update expanded nodes: remove siblings, add current
+            const newExpanded = new Set(expandedNodeIds);
+            siblings.forEach(s => newExpanded.delete(s.id));
+            newExpanded.add(node.id);
+            setExpandedNodeIds(newExpanded);
 
             selectRole(node.id);
             if (onNodeClick) onNodeClick({ type: 'category', ...node });

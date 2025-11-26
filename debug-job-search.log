@@ -72,3 +72,38 @@
 [2025-11-26T16:04:46.426Z] Request params: {"jobTitle":"Technology & Digital","intelligentQuery":"Technology sales business development consultant roles London junior mid-level B2B SaaS fintech proptech startup experience economics graduate 2024 2025","location":"United Kingdom"}
 [2025-11-26T16:04:46.426Z] 🤖 Attempting AI Query 
 [2025-11-26T16:04:46.426Z] 🔍 Querying Perplexity with: "Technology sales business development consultant roles London junior mid-level B2B SaaS fintech proptech startup experience economics graduate 2024 2025"
+[2025-11-26T16:04:59.451Z] ✅ Perplexity Raw Response: "{\n  \"count\": 12,\n  \"jobs\": [\n    {\n      \"title\": \"Graduate Sales Role - Business Development Representative\",\n      \"company\": \"Leading Tech Employer\",\n      \"location\": \"London, UK\",\n      \"url\": \"h..."
+[2025-11-26T16:04:59.454Z] 🤖 AI Query Result: {"count":12}
+[2025-11-26T16:04:59.454Z] ✅ Final Response: {"count":12,"jobs":12}
+[2025-11-26T16:26:14.407Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:26:14.416Z] Request params: {"jobTitle":"Business Operations Analyst","intelligentQuery":"Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background","location":"United Kingdom"}
+[2025-11-26T16:26:14.416Z] 🤖 Attempting AI Query 
+[2025-11-26T16:26:14.416Z] 🔍 Querying Perplexity with: "Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background"
+[2025-11-26T16:26:19.923Z] ✅ Perplexity Raw Response: "{\n  \"count\": 1,\n  \"jobs\": [\n    {\n      \"title\": \"Business Operations Analyst\",\n      \"company\": \"Wollit\",\n      \"location\": \"London, UK\",\n      \"url\": \"https://startup.jobs/business-operations-analys..."
+[2025-11-26T16:26:19.924Z] 🤖 AI Query Result: {"count":1}
+[2025-11-26T16:26:19.924Z] ✅ Final Response: {"count":1,"jobs":1}
+[2025-11-26T16:26:27.679Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:26:27.679Z] Request params: {"jobTitle":"Product Strategy Analyst","intelligentQuery":"junior product strategy analyst roles London 2024 2025 startup tech experience economics graduate business development commercial strategy entry level associate consultant B2B SaaS fintech proptech career change transition","location":"United Kingdom"}
+[2025-11-26T16:26:27.680Z] 🤖 Attempting AI Query 
+[2025-11-26T16:26:27.680Z] 🔍 Querying Perplexity with: "junior product strategy analyst roles London 2024 2025 startup tech experience economics graduate business development commercial strategy entry level associate consultant B2B SaaS fintech proptech career change transition"
+[2025-11-26T16:26:31.230Z] ✅ Perplexity Raw Response: "{\n  \"count\": 0,\n  \"jobs\": []\n}..."
+[2025-11-26T16:26:31.231Z] 🤖 AI Query Result: {"count":0}
+[2025-11-26T16:26:31.231Z] ⚠️ No results. Falling back to generic query. 
+[2025-11-26T16:26:31.231Z] 🔍 Querying Perplexity with: "Product Strategy Analyst jobs"
+[2025-11-26T16:26:38.890Z] ✅ Perplexity Raw Response: "{\n  \"count\": 5,\n  \"jobs\": [\n    {\n      \"title\": \"Product Strategy Analyst\",\n      \"company\": \"OVO-View Team\",\n      \"location\": \"Bristol or London, United Kingdom\",\n      \"url\": \"https://www.jobsite...."
+[2025-11-26T16:26:38.893Z] 🔎 Generic Query Result: {"count":5}
+[2025-11-26T16:26:38.895Z] ✅ Final Response: {"count":5,"jobs":5}
+[2025-11-26T16:26:52.647Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:26:52.648Z] Request params: {"jobTitle":"Business, Finance & Operations","intelligentQuery":"Business development analyst operations consultant roles London tech startups SaaS fintech junior mid-level economics graduate revenue operations commercial strategy analyst venture capital growth stage companies 1-3 years experience","location":"United Kingdom"}
+[2025-11-26T16:26:52.648Z] 🤖 Attempting AI Query 
+[2025-11-26T16:26:52.648Z] 🔍 Querying Perplexity with: "Business development analyst operations consultant roles London tech startups SaaS fintech junior mid-level economics graduate revenue operations commercial strategy analyst venture capital growth stage companies 1-3 years experience"
+[2025-11-26T16:27:03.704Z] ✅ Perplexity Raw Response: "{\n  \"count\": 10,\n  \"jobs\": [\n    {\n      \"title\": \"FinTech Strategy and Business Development First Year Analyst\",\n      \"company\": \"Financial Technology Partners\",\n      \"location\": \"London, United Ki..."
+[2025-11-26T16:27:03.705Z] 🤖 AI Query Result: {"count":10}
+[2025-11-26T16:27:03.705Z] ✅ Final Response: {"count":10,"jobs":10}
+[2025-11-26T16:28:24.053Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:28:24.055Z] Request params: {"jobTitle":"Technology & Digital","intelligentQuery":"Technology sales business development consultant roles London junior mid-level B2B SaaS fintech proptech startup experience economics graduate 2024 2025","location":"United Kingdom"}
+[2025-11-26T16:28:24.055Z] 🤖 Attempting AI Query 
+[2025-11-26T16:28:24.055Z] 🔍 Querying Perplexity with: "Technology sales business development consultant roles London junior mid-level B2B SaaS fintech proptech startup experience economics graduate 2024 2025"
+[2025-11-26T16:28:37.790Z] ✅ Perplexity Raw Response: "{\n  \"count\": 9,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Business Development Manager - Enterprise\",\n      \"company\": \"Undisclosed\",\n      \"location\": \"London, UK\",\n      \"url\": \"https://uk.indeed.com..."
+[2025-11-26T16:28:37.810Z] 🤖 AI Query Result: {"count":9}
+[2025-11-26T16:28:37.810Z] ✅ Final Response: {"count":9,"jobs":9}
