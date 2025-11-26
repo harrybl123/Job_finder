@@ -162,6 +162,9 @@ Before returning, check:
 ✅ No forbidden keywords?
 ✅ currentLevel based on evidence?
 ✅ Each path has links array?
+✅ CRITICAL: Each pathNode MUST have a "type" property set to either "ROLE" or "CATEGORY"
+   - "ROLE" = Specific job title (e.g., "Business Analyst", "Senior Developer")  
+   - "CATEGORY" = Grouping/area (e.g., "Data & Analytics", "Product Management")
 
 ---
 
@@ -178,8 +181,18 @@ Return a JSON object with this structure:
       "levelJump": 1, // How many levels above current (0-2 only)
       "nodeIds": ["id1", "id2"], // Legacy support
       "pathNodes": [ // NEW: Dynamic node generation with FULL lineage
-         { "id": "unique-id-1", "name": "Mid-Level Developer", "level": 2 },
-         { "id": "unique-id-2", "name": "Senior Developer", "level": 3 }
+         { 
+           "id": "unique-id-1", 
+           "name": "Mid-Level Developer", 
+           "level": 2,
+           "type": "CATEGORY" // REQUIRED: "ROLE" for job titles (e.g., "Business Analyst") OR "CATEGORY" for groupings (e.g., "Data & Analytics")
+         },
+         { 
+           "id": "unique-id-2", 
+           "name": "Senior Developer", 
+           "level": 3,
+           "type": "ROLE" // This is a specific job title people could apply for
+         }
       ],
       "links": [ // NEW: Explicit graph connections
          { "source": "unique-id-1", "target": "unique-id-2" }
