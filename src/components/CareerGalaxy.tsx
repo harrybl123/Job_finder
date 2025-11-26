@@ -651,224 +651,147 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
     // Handle node click - reveal children or trigger job search
     const handleNodeClickInternal = async (node: PositionedNode) => {
-        // 🔍 DIAGNOSTIC LOGGING
-        console.log('=== NODE CLICKED ===');
-        console.log('Node name:', node.name);
-        console.log('Node type:', node.type);
-        console.log('Node level (raw):', node.level);
-        console.log('Current level (raw):', currentLevel);
+        console.log('=== NODE CLICKED ===', node.name);
 
         // 🛡️ ROBUST DATA NORMALIZATION
         const nodeLevel = normalizeLevel(node.level);
         const userLevel = normalizeLevel(currentLevel);
-
-        console.log('Normalized Levels:', { node: nodeLevel, user: userLevel });
-
-        // ✨ JOB ROLE DETECTION
-        // 1. Explicit AI tag "ROLE"
-        // 2. Fallback: Level >= 3 (Senior/Lead roles usually)
-        // 3. Fallback: Leaf node (no children)
-        // 4. NEW: If node is already expanded, treat second click as "I want jobs for this"
         const isExpanded = expandedNodeIds.has(node.id);
-
-        const isJobRole =
-            node.type === 'ROLE' ||
-            (!node.type && nodeLevel >= 3) ||
-            (node.childIds && node.childIds.length === 0) ||
-            (isExpanded && nodeLevel >= 1); // Allow searching for categories if clicked twice (but not super clusters)
-
+        const hasChildren = node.childIds && node.childIds.length > 0;
         const isRecommended = node.recommended === true;
 
         // 📏 REACHABILITY CHECK
-        // Allow clicking if within 2 levels OR if user level is unknown (0)
-        // 🛡️ FIX: Check for undefined/null explicitly, as 0 is a valid level!
         const isWithinReach = (currentLevel === undefined || currentLevel === null) || (nodeLevel <= userLevel + 2);
 
-        console.log('=== JOB SEARCH DEBUG ===');
-        console.log('Node:', node.name);
-        console.log('Flags:', {
-            isJobRole,
+        console.log('Click Analysis:', {
+            node: node.name,
+            isExpanded,
+            hasChildren,
             isRecommended,
             isWithinReach,
-            isExpanded,
             nodeLevel,
-            userLevel,
-            currentLevel
+            userLevel
         });
 
-        // Only trigger job search for ACTUAL JOB ROLES within reach
-        // OR if the user explicitly clicks an already-expanded node (forcing search)
-        const shouldShowJobs = (isJobRole && isRecommended && isWithinReach) || (isExpanded && nodeLevel >= 1);
+        // ✨ CLEAR CLICK BEHAVIOR:
+        // 1. If node has children AND is NOT expanded → Expand it (reveal children)
+        // 2. If node has children AND IS expanded → Open job board
+        // 3. If node has NO children (leaf) → Open job board immediately
 
-        console.log('shouldShowJobs:', shouldShowJobs);
+        const shouldExpand = hasChildren && !isExpanded;
+        const shouldShowJobs = !shouldExpand && isRecommended && isWithinReach;
 
-        if (shouldShowJobs) {
-            console.log('🎯 Triggering job search for ROLE:', node.name);
+        console.log('Decision:', { shouldExpand, shouldShowJobs });
+
+        // EXPAND CHILDREN (First click on parent nodes)
+        if (shouldExpand) {
+            console.log('📂 Expanding node:', node.name);
+            const newExpanded = new Set(expandedNodeIds);
+            newExpanded.add(node.id);
+            setExpandedNodeIds(newExpanded);
+
             selectRole(node.id);
-            if (onNodeClick) onNodeClick({ type: 'role', ...node });
-
-            // Open the panel immediately
-            setSelectedJobNodeId(node.id);
-
-            // Fetch job count with AI analysis if not already loaded or loading
-            if (!jobCounts[node.id] && loadingJobCount !== node.id) {
-                setLoadingJobCount(node.id);
-
-                try {
-                    const userId = getUserId();
-
-                    if (!userId) {
-                        // Fall back to generic search
-                        const response = await fetch('/api/job-count', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                jobTitle: node.name,
-                                location: 'United Kingdom'
-                            })
-                        });
-
-                        if (response.ok) {
-                            const data = await response.json();
-                            setJobCounts(prev => ({
-                                ...prev,
-                                [node.id]: {
-                                    count: data.count,
-                                    jobs: data.jobs || [],
-                                    loading: false
-                                }
-                            }));
-                        }
-                    } else {
-                        // AI-powered search
-                        let intelligentQuery = null;
-                        let analysisData = null;
-
-                        try {
-                            const analysisResponse = await fetch('/api/analyze-fit', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    userId,
-                                    jobTitle: node.name
-                                })
-                            });
-
-                            if (analysisResponse.ok) {
-                                const analysis = await analysisResponse.json();
-                                intelligentQuery = analysis.intelligentQuery;
-                                analysisData = analysis;
-                            } else {
-                                console.warn('Analyze fit failed, falling back to generic search');
-                            }
-                        } catch (e) {
-                            console.error('Analyze fit error:', e);
-                        }
-
-                        // Proceed to job search regardless of analysis success
-                        const jobResponse = await fetch('/api/job-count', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                intelligentQuery: intelligentQuery, // Can be null, API will handle it
-                                jobTitle: node.name, // Fallback
-                                location: 'United Kingdom'
-                            })
-                        });
-
-                        if (jobResponse.ok) {
-                            const data = await jobResponse.json();
-                            setJobCounts(prev => ({
-                                ...prev,
-                                [node.id]: {
-                                    count: data.count,
-                                    jobs: data.jobs || [],
-                                    loading: false,
-                                    // Only add analysis data if it exists
-                                    ...(analysisData ? {
-                                        reasoning: analysisData.reasoning,
-                                        keyStrengths: analysisData.keyStrengths,
-                                        potentialGaps: analysisData.potentialGaps
-                                    } : {})
-                                }
-                            }));
-                        }
-                    }
-                } catch (error) {
-                    console.error('Error in intelligent job search:', error);
-                } finally {
-                    setLoadingJobCount(null);
-                }
-            }
-            return;
+            if (onNodeClick) onNodeClick({ type: 'category', ...node });
+            return; // Don't continue to job search
         }
 
-        // Toggle expansion logic
-        const childIds = node.childIds;
+        // OPEN JOB BOARD (Second click or leaf nodes)
+        console.log('🎯 Triggering job search for ROLE:', node.name);
+        selectRole(node.id);
+        if (onNodeClick) onNodeClick({ type: 'role', ...node });
 
-        if (isExpanded) {
-            // COLLAPSE
-            const nodesToRemove = new Set<string>();
-            const findDescendants = (nodeId: string) => {
-                const n = allPositionedNodes.allNodes.find(x => x.id === nodeId);
-                if (n) {
-                    nodesToRemove.add(nodeId);
-                    n.childIds.forEach((childId: string) => findDescendants(childId));
+        // Open the panel immediately
+        setSelectedJobNodeId(node.id);
+
+        // Fetch job count with AI analysis if not already loaded or loading
+        if (!jobCounts[node.id] && loadingJobCount !== node.id) {
+            setLoadingJobCount(node.id);
+
+            try {
+                const userId = getUserId();
+
+                if (!userId) {
+                    // Fall back to generic search
+                    const response = await fetch('/api/job-count', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            jobTitle: node.name,
+                            location: 'United Kingdom'
+                        })
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        setJobCounts(prev => ({
+                            ...prev,
+                            [node.id]: {
+                                count: data.count,
+                                jobs: data.jobs || [],
+                                loading: false
+                            }
+                        }));
+                    }
+                } else {
+                    // AI-powered search
+                    let intelligentQuery = null;
+                    let analysisData = null;
+
+                    try {
+                        const analysisResponse = await fetch('/api/analyze-fit', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId,
+                                jobTitle: node.name
+                            })
+                        });
+
+                        if (analysisResponse.ok) {
+                            const analysis = await analysisResponse.json();
+                            intelligentQuery = analysis.intelligentQuery;
+                            analysisData = analysis;
+                        } else {
+                            console.warn('Analyze fit failed, falling back to generic search');
+                        }
+                    } catch (e) {
+                        console.error('Analyze fit error:', e);
+                    }
+
+                    // Proceed to job search regardless of analysis success
+                    const jobResponse = await fetch('/api/job-count', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            intelligentQuery: intelligentQuery, // Can be null, API will handle it
+                            jobTitle: node.name, // Fallback
+                            location: 'United Kingdom'
+                        })
+                    });
+
+                    if (jobResponse.ok) {
+                        const data = await jobResponse.json();
+                        setJobCounts(prev => ({
+                            ...prev,
+                            [node.id]: {
+                                count: data.count,
+                                jobs: data.jobs || [],
+                                loading: false,
+                                // Only add analysis data if it exists
+                                ...(analysisData ? {
+                                    reasoning: analysisData.reasoning,
+                                    keyStrengths: analysisData.keyStrengths,
+                                    potentialGaps: analysisData.potentialGaps
+                                } : {})
+                            }
+                        }));
+                    }
                 }
-            };
-            childIds.forEach((id: string) => findDescendants(id));
-
-            setVisibleNodeIds(prev => {
-                const newSet = new Set(prev);
-                nodesToRemove.forEach(id => newSet.delete(id));
-                return newSet;
-            });
-
-            setExpandedNodeIds(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(node.id);
-                return newSet;
-            });
-        } else if (childIds.length > 0) {
-            // EXPAND
-            const siblings = allPositionedNodes.allNodes.filter(n =>
-                n.parentId === node.parentId && n.id !== node.id
-            );
-
-            const nodesToRemove = new Set<string>();
-            const removeDescendants = (nodeId: string) => {
-                const nodeToRemove = allPositionedNodes.allNodes.find(n => n.id === nodeId);
-                if (nodeToRemove) {
-                    nodesToRemove.add(nodeId);
-                    nodeToRemove.childIds.forEach((childId: string) => removeDescendants(childId));
-                }
-            };
-
-            siblings.forEach(sibling => {
-                if (expandedNodeIds.has(sibling.id)) {
-                    sibling.childIds.forEach((childId: string) => removeDescendants(childId));
-                }
-            });
-
-            setVisibleNodeIds(prev => {
-                const newSet = new Set(prev);
-                nodesToRemove.forEach(id => newSet.delete(id));
-                childIds.forEach((id: string) => newSet.add(id));
-                return newSet;
-            });
-
-            setExpandedNodeIds(prev => {
-                const newSet = new Set(prev);
-                siblings.forEach(s => newSet.delete(s.id));
-                newSet.add(node.id);
-                return newSet;
-            });
-
-            // Add to history
-            setExpansionHistory(prev => [...prev, node.id]);
-
-            // Center view on the clicked node
-            centerOnNode(node);
+            } catch (error) {
+                console.error('Error in intelligent job search:', error);
+            } finally {
+                setLoadingJobCount(null);
+            }
         }
     };
 
