@@ -627,38 +627,65 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         });
     }, []);
 
+    // 🛠️ HELPER: Robust level normalization
+    const normalizeLevel = (input: any): number => {
+        if (typeof input === 'number') return input;
+        if (typeof input === 'string') {
+            // Try parsing as number first
+            const parsed = parseInt(input, 10);
+            if (!isNaN(parsed)) return parsed;
+
+            // Map common string levels if AI goes rogue
+            const map: Record<string, number> = {
+                'INTERN': 0, 'ENTRY': 1, 'JUNIOR': 1, 'ASSOCIATE': 1,
+                'MID': 2, 'SENIOR': 3, 'LEAD': 4, 'PRINCIPAL': 5, 'HEAD': 5,
+                'DIRECTOR': 6, 'VP': 7, 'C-SUITE': 8
+            };
+            const upper = input.toUpperCase();
+            for (const key in map) {
+                if (upper.includes(key)) return map[key];
+            }
+        }
+        return 0; // Default to 0 if unknown
+    };
+
     // Handle node click - reveal children or trigger job search
     const handleNodeClickInternal = async (node: PositionedNode) => {
         // 🔍 DIAGNOSTIC LOGGING
         console.log('=== NODE CLICKED ===');
         console.log('Node name:', node.name);
-        console.log('Node type:', node.type, '(should be "ROLE" or "CATEGORY")');
-        console.log('Node level:', node.level);
-        console.log('Node recommended:', node.recommended);
-        console.log('Current level (user):', currentLevel);
+        console.log('Node type:', node.type);
+        console.log('Node level (raw):', node.level);
+        console.log('Current level (raw):', currentLevel);
 
-        // ✨ NEW LOGIC: Use explicit AI tagging to determine if this is a job role
-        // The AI tags each node as "ROLE" (job title) or "CATEGORY" (grouping)
-        // 🛡️ FALLBACK: If type is missing (old AI response), use level >= 3 as proxy
-        const isJobRole = node.type === 'ROLE' || (!node.type && Number(node.level) >= 3);
+        // 🛡️ ROBUST DATA NORMALIZATION
+        const nodeLevel = normalizeLevel(node.level);
+        const userLevel = normalizeLevel(currentLevel);
+
+        console.log('Normalized Levels:', { node: nodeLevel, user: userLevel });
+
+        // ✨ JOB ROLE DETECTION
+        // 1. Explicit AI tag "ROLE"
+        // 2. Fallback: Level >= 3 (Senior/Lead roles usually)
+        // 3. Fallback: Leaf node (no children)
+        const isJobRole =
+            node.type === 'ROLE' ||
+            (!node.type && nodeLevel >= 3) ||
+            (node.childIds && node.childIds.length === 0);
+
         const isRecommended = node.recommended === true;
 
-        // 🛡️ DEFENSIVE: Ensure numeric comparison (in case of type coercion)
-        const nodeLevelNum = Number(node.level) || 0;
-        const currentLevelNum = Number(currentLevel) || 0;
-        const isWithinReach = currentLevel ? (nodeLevelNum <= currentLevelNum + 2) : true;
+        // 📏 REACHABILITY CHECK
+        // Allow clicking if within 2 levels OR if user level is unknown (0)
+        const isWithinReach = userLevel === 0 || (nodeLevel <= userLevel + 2);
 
-        console.log('Computed flags:');
-        console.log('  isJobRole:', isJobRole, '(type === "ROLE"?)');
-        console.log('  isRecommended:', isRecommended);
-        console.log('  isWithinReach:', isWithinReach, `(${nodeLevelNum} <= ${currentLevelNum} + 2)`);
-        console.log('  shouldShowJobs:', isJobRole && isRecommended && isWithinReach);
+        console.log('Checks:', { isJobRole, isRecommended, isWithinReach });
 
         // Only trigger job search for ACTUAL JOB ROLES within reach
         const shouldShowJobs = isJobRole && isRecommended && isWithinReach;
 
         if (shouldShowJobs) {
-            console.log('🎯 Triggering job search for ROLE:', node.name, 'Level:', node.level);
+            console.log('🎯 Triggering job search for ROLE:', node.name);
             selectRole(node.id);
             if (onNodeClick) onNodeClick({ type: 'role', ...node });
 
@@ -1181,8 +1208,8 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
                         // 🎯 STRETCH GOAL DETECTION
                         // 🛡️ DEFENSIVE: Ensure numeric comparison for visual styling
-                        const nodeLevelNum = Number(node.level) || 0;
-                        const currentLevelNum = Number(currentLevel) || 0;
+                        const nodeLevelNum = normalizeLevel(node.level);
+                        const currentLevelNum = normalizeLevel(currentLevel);
                         const isStretchGoal = currentLevel && nodeLevelNum > currentLevelNum + 1;
                         const isImmediateStep = currentLevel && nodeLevelNum === currentLevelNum + 1;
 
