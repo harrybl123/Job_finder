@@ -673,54 +673,27 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
             isWithinReach
         });
 
-        // 🎯 SIMPLE DECISION TREE:
-        // 
-        // Has children? 
-        //   Yes → Already expanded?
-        //     Yes → Is it a job role (level >= 3) AND recommended?
-        //       Yes → OPEN JOB BOARD
-        //       No  → DO NOTHING (super clusters don't have job boards)
-        //     No  → EXPAND (show children)
-        //   No  → Is it a job role (level >= 3) AND recommended?
-        //     Yes → OPEN JOB BOARD
-        //     No  → DO NOTHING
+        // 🎯 SIMPLIFIED LOGIC:
+        // Prioritize job search for recommended nodes
+        // If recommended + reachable + job level → Always show jobs
+        // Otherwise → Expand if has children
 
-        let action: 'EXPAND' | 'JOB_SEARCH' | 'NOTHING';
+        const isJobLevel = nodeLevel >= 2; // Level 2+ can have jobs
+        const shouldShowJobs = isRecommended && isWithinReach && isJobLevel;
+        const shouldExpand = !shouldShowJobs && hasChildren && !isExpanded;
 
-        if (hasChildren) {
-            if (isExpanded) {
-                // Second click on expanded node
-                if (nodeLevel >= 3 && isRecommended && isWithinReach) {
-                    action = 'JOB_SEARCH';
-                } else {
-                    action = 'NOTHING';
-                }
-            } else {
-                // First click - expand
-                action = 'EXPAND';
-            }
-        } else {
-            // Leaf node
-            if (nodeLevel >= 3 && isRecommended && isWithinReach) {
-                action = 'JOB_SEARCH';
-            } else {
-                action = 'NOTHING';
-            }
-        }
+        console.log('Decision:', {
+            shouldShowJobs,
+            shouldExpand,
+            reasoning: shouldShowJobs ? 'Recommended job role' : shouldExpand ? 'Expand children' : 'Nothing to do'
+        });
 
-        console.log('🎬 Action:', action);
-
-        if (action === 'NOTHING') {
-            console.log('⏸️ No action taken - Reason:');
-            console.log('  - Has children?', hasChildren);
-            console.log('  - Is expanded?', isExpanded);
-            console.log('  - Node level:', nodeLevel, '(need >= 3 for job search)');
-            console.log('  - Is recommended?', isRecommended, '(need true)');
-            console.log('  - Is within reach?', isWithinReach, '(need true)');
+        if (!shouldShowJobs && !shouldExpand) {
+            console.log('⏸️ No action');
             return;
         }
 
-        if (action === 'EXPAND') {
+        if (shouldExpand) {
             console.log('📂 Expanding node:', node.name);
 
             // Find siblings (nodes at same level with same parent)
