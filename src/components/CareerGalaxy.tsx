@@ -711,7 +711,12 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         console.log('🎬 Action:', action);
 
         if (action === 'NOTHING') {
-            console.log('⏸️ No action taken');
+            console.log('⏸️ No action taken - Reason:');
+            console.log('  - Has children?', hasChildren);
+            console.log('  - Is expanded?', isExpanded);
+            console.log('  - Node level:', nodeLevel, '(need >= 3 for job search)');
+            console.log('  - Is recommended?', isRecommended, '(need true)');
+            console.log('  - Is within reach?', isWithinReach, '(need true)');
             return;
         }
 
