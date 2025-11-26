@@ -1216,8 +1216,9 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                         // 🛡️ DEFENSIVE: Ensure numeric comparison for visual styling
                         const nodeLevelNum = normalizeLevel(node.level);
                         const currentLevelNum = normalizeLevel(currentLevel);
-                        const isStretchGoal = currentLevel && nodeLevelNum > currentLevelNum + 1;
-                        const isImmediateStep = currentLevel && nodeLevelNum === currentLevelNum + 1;
+                        const hasCurrentLevel = currentLevel !== undefined && currentLevel !== null;
+                        const isStretchGoal = hasCurrentLevel && nodeLevelNum > currentLevelNum + 1;
+                        const isImmediateStep = hasCurrentLevel && nodeLevelNum === currentLevelNum + 1;
 
                         // Dim non-recommended nodes OR stretch goals
                         const opacity = isRecommended || isHovered ?
