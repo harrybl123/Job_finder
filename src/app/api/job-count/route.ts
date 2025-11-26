@@ -1,30 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
+
+// Helper to log to file
+const logToFile = (message: string, data?: any) => {
+    try {
+        const logPath = path.join(process.cwd(), 'debug-job-search.log');
+        const timestamp = new Date().toISOString();
+        const logEntry = `[${timestamp}] ${message} ${data ? JSON.stringify(data) : ''}\n`;
+        fs.appendFileSync(logPath, logEntry);
+    } catch (e) {
+        console.error('Failed to write to log file:', e);
+    }
+};
 
 export async function POST(req: NextRequest) {
     try {
         const { jobTitle, intelligentQuery, location = 'United Kingdom' } = await req.json();
 
+        logToFile('=== NEW SEARCH REQUEST ===');
+        logToFile('Request params:', { jobTitle, intelligentQuery, location });
+
         // Accept either intelligentQuery (AI-generated) or jobTitle (generic)
         const searchQuery = intelligentQuery || jobTitle;
 
         if (!searchQuery) {
+            logToFile('❌ Missing search query');
             return NextResponse.json(
                 { error: 'jobTitle or intelligentQuery is required' },
                 { status: 400 }
             );
         }
 
-        console.log('🔍 Fetching jobs:', intelligentQuery ? '(AI-powered)' : '(generic)');
-        console.log('  Query:', searchQuery.substring(0, 100) + '...');
-
         const PERPLEXITY_API_KEY = process.env.PERPLEXITY_API_KEY;
 
         if (!PERPLEXITY_API_KEY) {
+            logToFile('❌ PERPLEXITY_API_KEY missing');
             throw new Error('PERPLEXITY_API_KEY not configured');
         }
 
         // Helper to query Perplexity
         const queryPerplexity = async (query: string) => {
+            logToFile('🔍 Querying Perplexity with:', query);
+
             const response = await fetch('https://api.perplexity.ai/chat/completions', {
                 method: 'POST',
                 headers: {
@@ -57,10 +75,17 @@ export async function POST(req: NextRequest) {
                 })
             });
 
-            if (!response.ok) throw new Error(`Perplexity API failed: ${response.status}`);
+            if (!response.ok) {
+                const errorText = await response.text();
+                logToFile('❌ Perplexity API Error:', { status: response.status, text: errorText });
+                throw new Error(`Perplexity API failed: ${response.status}`);
+            }
 
             const data = await response.json();
             const content = data.choices?.[0]?.message?.content;
+
+            logToFile('✅ Perplexity Raw Response:', content ? content.substring(0, 200) + '...' : 'Empty');
+
             if (!content) throw new Error('No content in Perplexity response');
 
             // Clean and parse
@@ -74,25 +99,27 @@ export async function POST(req: NextRequest) {
 
         if (intelligentQuery) {
             try {
-                console.log('🤖 Trying AI Query:', intelligentQuery);
+                logToFile('🤖 Attempting AI Query');
                 jobData = await queryPerplexity(intelligentQuery);
-            } catch (e) {
-                console.error('AI Query failed, falling back...');
+                logToFile('🤖 AI Query Result:', { count: jobData.count });
+            } catch (e: any) {
+                logToFile('❌ AI Query Failed:', e.message);
             }
         }
 
         // 2. Fallback to Generic Search if no results or AI query failed
         if (!jobData.count || jobData.count === 0) {
-            console.log('⚠️ No results with AI query. Falling back to generic title:', jobTitle);
+            logToFile('⚠️ No results. Falling back to generic query.');
             usedQuery = `${jobTitle} jobs`;
             try {
                 jobData = await queryPerplexity(usedQuery);
-            } catch (e) {
-                console.error('Generic Query failed:', e);
+                logToFile('🔎 Generic Query Result:', { count: jobData.count });
+            } catch (e: any) {
+                logToFile('❌ Generic Query Failed:', e.message);
             }
         }
 
-        console.log('✅ Final Result:', jobData.count, 'jobs found');
+        logToFile('✅ Final Response:', { count: jobData.count, jobs: jobData.jobs?.length });
 
         return NextResponse.json({
             success: true,
@@ -105,6 +132,7 @@ export async function POST(req: NextRequest) {
         });
 
     } catch (error: any) {
+        logToFile('❌ CRITICAL ERROR:', error.message);
         console.error('❌ Job count error:', error.message);
 
         return NextResponse.json({

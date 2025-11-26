@@ -729,24 +729,37 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                         }
                     } else {
                         // AI-powered search
-                        const analysisResponse = await fetch('/api/analyze-fit', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                userId,
-                                jobTitle: node.name
-                            })
-                        });
+                        let intelligentQuery = null;
+                        let analysisData = null;
 
-                        if (!analysisResponse.ok) throw new Error('Failed to analyze fit');
+                        try {
+                            const analysisResponse = await fetch('/api/analyze-fit', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    userId,
+                                    jobTitle: node.name
+                                })
+                            });
 
-                        const analysis = await analysisResponse.json();
+                            if (analysisResponse.ok) {
+                                const analysis = await analysisResponse.json();
+                                intelligentQuery = analysis.intelligentQuery;
+                                analysisData = analysis;
+                            } else {
+                                console.warn('Analyze fit failed, falling back to generic search');
+                            }
+                        } catch (e) {
+                            console.error('Analyze fit error:', e);
+                        }
 
+                        // Proceed to job search regardless of analysis success
                         const jobResponse = await fetch('/api/job-count', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
-                                intelligentQuery: analysis.intelligentQuery,
+                                intelligentQuery: intelligentQuery, // Can be null, API will handle it
+                                jobTitle: node.name, // Fallback
                                 location: 'United Kingdom'
                             })
                         });
@@ -759,9 +772,12 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                                     count: data.count,
                                     jobs: data.jobs || [],
                                     loading: false,
-                                    reasoning: analysis.reasoning,
-                                    keyStrengths: analysis.keyStrengths,
-                                    potentialGaps: analysis.potentialGaps
+                                    // Only add analysis data if it exists
+                                    ...(analysisData ? {
+                                        reasoning: analysisData.reasoning,
+                                        keyStrengths: analysisData.keyStrengths,
+                                        potentialGaps: analysisData.potentialGaps
+                                    } : {})
                                 }
                             }));
                         }

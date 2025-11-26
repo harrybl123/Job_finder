@@ -1,6 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import Anthropic from '@anthropic-ai/sdk';
+import fs from 'fs';
+import path from 'path';
+
+// Helper to log to file
+const logToFile = (message: string, data?: any) => {
+    try {
+        const logPath = path.join(process.cwd(), 'debug-analyze-fit.log');
+        const timestamp = new Date().toISOString();
+        const logEntry = `[${timestamp}] ${message} ${data ? JSON.stringify(data) : ''}\n`;
+        fs.appendFileSync(logPath, logEntry);
+    } catch (e) {
+        console.error('Failed to write to log file:', e);
+    }
+};
 
 const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY,
@@ -10,14 +24,16 @@ export async function POST(req: NextRequest) {
     try {
         const { userId, jobTitle } = await req.json();
 
+        logToFile('=== NEW ANALYSIS REQUEST ===');
+        logToFile('Request:', { userId, jobTitle });
+
         if (!userId || !jobTitle) {
+            logToFile('❌ Missing userId or jobTitle');
             return NextResponse.json(
                 { error: 'userId and jobTitle are required' },
                 { status: 400 }
             );
         }
-
-        console.log('🧠 Analyzing fit for:', userId, '→', jobTitle);
 
         // Step 1: Check cache first (within 30 days)
         const thirtyDaysAgo = new Date();
@@ -33,7 +49,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (cached && cached.expiresAt > new Date()) {
-            console.log('✅ Cache hit! Using saved analysis');
+            logToFile('✅ Cache hit');
             return NextResponse.json({
                 intelligentQuery: cached.intelligentQuery,
                 reasoning: cached.reasoning,
@@ -49,6 +65,7 @@ export async function POST(req: NextRequest) {
         });
 
         if (!user || !user.parsedCV) {
+            logToFile('❌ User CV not found');
             return NextResponse.json(
                 { error: 'User CV not found. Please upload your CV first.' },
                 { status: 404 }
@@ -56,10 +73,10 @@ export async function POST(req: NextRequest) {
         }
 
         const parsedCV = JSON.parse(user.parsedCV);
-        console.log('📄 User CV found:', parsedCV.name);
+        logToFile('📄 CV Found for:', parsedCV.name);
 
         // Step 3: Call Claude to analyze fit
-        console.log('🤖 Calling Claude for deep analysis...');
+        logToFile('🤖 Calling Claude...');
 
         const message = await anthropic.messages.create({
             model: 'claude-3-5-sonnet-20241022',
@@ -99,6 +116,7 @@ Be specific and actionable. The search query should help find jobs they'll ACTUA
 
         const content = message.content[0];
         if (content.type !== 'text') {
+            logToFile('❌ Unexpected AI response format');
             throw new Error('Unexpected AI response format');
         }
 
@@ -107,9 +125,9 @@ Be specific and actionable. The search query should help find jobs they'll ACTUA
         try {
             const jsonText = content.text.trim();
             analysis = JSON.parse(jsonText);
-            console.log('✅ Claude analysis complete');
+            logToFile('✅ Claude analysis complete');
         } catch (parseError) {
-            console.error('Failed to parse Claude response:', content.text);
+            logToFile('❌ Failed to parse Claude response:', content.text);
             throw new Error('AI returned invalid analysis');
         }
 
@@ -139,7 +157,7 @@ Be specific and actionable. The search query should help find jobs they'll ACTUA
             }
         });
 
-        console.log('💾 Analysis saved to cache');
+        logToFile('💾 Analysis saved to cache');
 
         return NextResponse.json({
             intelligentQuery: analysis.intelligentQuery,
@@ -150,6 +168,7 @@ Be specific and actionable. The search query should help find jobs they'll ACTUA
         });
 
     } catch (error: any) {
+        logToFile('❌ Analyze fit error:', error.message);
         console.error('❌ Analyze fit error:', error.message);
 
         return NextResponse.json({

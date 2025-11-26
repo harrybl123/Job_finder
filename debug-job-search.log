@@ -1,0 +1,7 @@
+[2025-11-26T11:22:03.880Z] === NEW SEARCH REQUEST === 
+[2025-11-26T11:22:03.882Z] Request params: {"jobTitle":"Software Engineer","location":"London"}
+[2025-11-26T11:22:03.882Z] ⚠️ No results. Falling back to generic query. 
+[2025-11-26T11:22:03.882Z] 🔍 Querying Perplexity with: "Software Engineer jobs"
+[2025-11-26T11:22:10.653Z] ✅ Perplexity Raw Response: "{\n  \"count\": 10,\n  \"jobs\": [\n    {\n      \"title\": \"Senior Software Engineer\",\n      \"company\": \"Confidential (Cloud • Information Technology • Security • Software • Cybersecurity)\",\n      \"location\": ..."
+[2025-11-26T11:22:10.654Z] 🔎 Generic Query Result: {"count":10}
+[2025-11-26T11:22:10.654Z] ✅ Final Response: {"count":10,"jobs":10}
