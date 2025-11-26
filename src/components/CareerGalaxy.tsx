@@ -310,7 +310,11 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         return { visibleNodes: filteredNodes, visibleLinks: filteredLinks };
     }, [allPositionedNodes, links, visibleNodeIds]);
 
-    // 🔥 AUTO-REVEAL: Make recommended path visible when paths prop changes
+    // 🔥 AUTO-REVEAL DISABLED: Users should click to explore paths themselves
+    // Previously, this useEffect automatically revealed the recommended path on load
+    // Now, only super clusters are visible - users must click to discover the path
+
+    /* DISABLED AUTO-REVEAL
     useEffect(() => {
         console.log('🔥 [CareerGalaxy] Auto-reveal useEffect triggered');
         console.log('   paths:', paths?.length, 'paths');
@@ -401,6 +405,7 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         }
 
     }, [paths, allPositionedNodes]);
+    */
 
     // Auto-expand and zoom to the primary path when it loads
     // DISABLED: Let users manually explore the path instead of auto-expanding
@@ -623,8 +628,13 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
     // Handle node click - reveal children or trigger job search
     const handleNodeClickInternal = async (node: PositionedNode) => {
-        // If it's a job title, trigger search AND fetch intelligent job count
-        if (node.level === 4) {
+        // NEW LOGIC: Trigger job search for recommended nodes within user's reach
+        const isRecommended = node.recommended === true;
+        const isWithinReach = currentLevel ? (node.level <= currentLevel + 2) : true; // If no currentLevel, allow all
+        const shouldShowJobs = isRecommended && isWithinReach;
+
+        if (shouldShowJobs) {
+            console.log('🎯 Triggering job search for:', node.name, 'Level:', node.level);
             selectRole(node.id);
             if (onNodeClick) onNodeClick({ type: 'role', ...node });
 
