@@ -56,26 +56,27 @@ export async function POST(req: NextRequest) {
                         content: `Find REAL, ACTIVE job postings in ${location} for: ${query}
 
 CRITICAL REQUIREMENTS:
-- Each job MUST have a DIRECT link to the actual job posting (not a search results page)
-- Only include jobs posted within the last 30 days
-- Verify the company name is real (not "Confidential" unless absolutely necessary)
-- URLs must be to specific job postings, NOT generic pages like "uk.indeed.com/q-remote-software-l-london-jobs.html"
+1. **Prioritize Official Job Boards**: Search LinkedIn Jobs, Indeed UK, Reed, Glassdoor, Total Jobs
+2. **Fresh Listings Only**: Jobs posted within last 14 days maximum
+3. **Direct Links**: Each URL must link to a SPECIFIC job posting, NOT a search results page
+4. **Verify Company**: Use real company names (avoid "Confidential" unless necessary)
+5. **No Generic URLs**: Reject links like "uk.indeed.com/jobs?q=software" - must be direct job IDs
 
-Return ONLY a JSON object with this exact structure (no markdown, no explanation):
+Return ONLY valid JSON (no markdown, no explanation):
 {
-  "count": <total number of VALID jobs found>,
+  "count": <number of valid jobs>,
   "jobs": [
     {
-      "title": "Specific Job Title",
+      "title": "Exact Job Title",
       "company": "Real Company Name",
       "location": "City, Country",
-      "url": "https://direct-link-to-actual-job-posting",
-      "salary": "Salary range or null"
+      "url": "https://direct-job-posting-url-with-job-id",
+      "salary": "£XX,XXX - £XX,XXX or null"
     }
   ]
 }
 
-Include up to 20 RECENT, ACTIVE job listings with WORKING links. If no valid jobs found, return count: 0 and empty jobs array.`
+Return up to 20 recent jobs with WORKING links from official job boards. Quality over quantity.`
                     }],
                     temperature: 0.2
                 })

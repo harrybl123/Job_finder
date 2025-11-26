@@ -135,3 +135,21 @@
 [2025-11-26T16:33:50.262Z] ✅ Perplexity Raw Response: "{\n  \"count\": 20,\n  \"jobs\": [\n    {\n      \"title\": \"Strategy Analyst\",\n      \"company\": \"Nesta\",\n      \"location\": \"London, United Kingdom\",\n      \"url\": \"https://uk.indeed.com/viewjob?jk=6e5b9e7b9e7b9..."
 [2025-11-26T16:33:50.399Z] 🤖 AI Query Result: {"count":20}
 [2025-11-26T16:33:50.399Z] ✅ Final Response: {"count":20,"jobs":20}
+[2025-11-26T16:45:23.931Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:45:23.932Z] Request params: {"jobTitle":"Business Operations Analyst","intelligentQuery":"Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background","location":"United Kingdom"}
+[2025-11-26T16:45:23.932Z] 🤖 Attempting AI Query 
+[2025-11-26T16:45:23.933Z] 🔍 Querying Perplexity with: "Junior Business Operations Analyst roles London startup tech companies SaaS fintech proptech requiring entrepreneurial mindset commercial acumen stakeholder management project coordination business development experience recent graduate economics background"
+[2025-11-26T16:45:26.624Z] ✅ Perplexity Raw Response: "{\n  \"count\": 0,\n  \"jobs\": []\n}..."
+[2025-11-26T16:45:26.625Z] 🤖 AI Query Result: {"count":0}
+[2025-11-26T16:45:26.625Z] ⚠️ No results. Falling back to generic query. 
+[2025-11-26T16:45:26.625Z] 🔍 Querying Perplexity with: "Business Operations Analyst jobs"
+[2025-11-26T16:45:33.605Z] ✅ Perplexity Raw Response: "{\n  \"count\": 3,\n  \"jobs\": [\n    {\n      \"title\": \"Revenue Operations Analyst\",\n      \"company\": \"Robert Half\",\n      \"location\": \"Cambridge, United Kingdom\",\n      \"url\": \"https://www.jobsite.co.uk/jo..."
+[2025-11-26T16:45:33.606Z] 🔎 Generic Query Result: {"count":3}
+[2025-11-26T16:45:33.606Z] ✅ Final Response: {"count":3,"jobs":3}
+[2025-11-26T16:47:05.867Z] === NEW SEARCH REQUEST === 
+[2025-11-26T16:47:05.868Z] Request params: {"jobTitle":"Strategy Analyst","intelligentQuery":"Junior Strategy Analyst OR Associate Strategy Analyst roles London technology consulting startups SaaS fintech proptech insurtech entry level graduate economics business development commercial strategy client-facing analytical","location":"United Kingdom"}
+[2025-11-26T16:47:05.868Z] 🤖 Attempting AI Query 
+[2025-11-26T16:47:05.868Z] 🔍 Querying Perplexity with: "Junior Strategy Analyst OR Associate Strategy Analyst roles London technology consulting startups SaaS fintech proptech insurtech entry level graduate economics business development commercial strategy client-facing analytical"
+[2025-11-26T16:47:09.440Z] ✅ Perplexity Raw Response: "```json\n{\n  \"count\": 1,\n  \"jobs\": [\n    {\n      \"title\": \"Junior Proposition Strategy Analyst 2025\",\n      \"company\": \"Royal London Group\",\n      \"location\": \"London, United Kingdom\",\n      \"url\": \"ht..."
+[2025-11-26T16:47:09.441Z] 🤖 AI Query Result: {"count":1}
+[2025-11-26T16:47:09.441Z] ✅ Final Response: {"count":1,"jobs":1}

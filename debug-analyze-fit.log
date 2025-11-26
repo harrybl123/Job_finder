@@ -75,3 +75,9 @@
 [2025-11-26T16:33:37.767Z] === NEW ANALYSIS REQUEST === 
 [2025-11-26T16:33:37.768Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Associate"}
 [2025-11-26T16:33:37.776Z] ✅ Cache hit 
+[2025-11-26T16:45:23.688Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:45:23.689Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Analyst"}
+[2025-11-26T16:45:23.692Z] ✅ Cache hit 
+[2025-11-26T16:47:05.805Z] === NEW ANALYSIS REQUEST === 
+[2025-11-26T16:47:05.807Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Analyst"}
+[2025-11-26T16:47:05.849Z] ✅ Cache hit 

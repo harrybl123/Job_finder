@@ -67,6 +67,11 @@ export default function JobListPanel({
                         <p className="text-cyan-300 text-sm">
                             {loading ? 'Searching...' : `${count} personalized matches found`}
                         </p>
+                        {!loading && count > 0 && (
+                            <p className="text-yellow-400/70 text-xs mt-1">
+                                ⚠️ Some links may be outdated as job postings expire quickly
+                            </p>
+                        )}
                     </div>
                     <button
                         onClick={onClose}
