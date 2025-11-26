@@ -9,6 +9,7 @@ export interface CareerNode {
     childIds: string[];
     color: string;
     description: string;
+    type?: 'ROLE' | 'CATEGORY'; // AI tags nodes for job search triggering
 
     // Visual positioning
     x?: number;
