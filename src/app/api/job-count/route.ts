@@ -53,23 +53,29 @@ export async function POST(req: NextRequest) {
                     model: 'sonar-pro',
                     messages: [{
                         role: 'user',
-                        content: `Find current job listings in ${location} for: ${query}
-    
-    Return ONLY a JSON object with this exact structure (no markdown, no explanation):
+                        content: `Find REAL, ACTIVE job postings in ${location} for: ${query}
+
+CRITICAL REQUIREMENTS:
+- Each job MUST have a DIRECT link to the actual job posting (not a search results page)
+- Only include jobs posted within the last 30 days
+- Verify the company name is real (not "Confidential" unless absolutely necessary)
+- URLs must be to specific job postings, NOT generic pages like "uk.indeed.com/q-remote-software-l-london-jobs.html"
+
+Return ONLY a JSON object with this exact structure (no markdown, no explanation):
+{
+  "count": <total number of VALID jobs found>,
+  "jobs": [
     {
-      "count": <total number of jobs found>,
-      "jobs": [
-        {
-          "title": "Job Title",
-          "company": "Company Name",
-          "location": "City, Country",
-          "url": "https://...",
-          "salary": "Salary range or null"
-        }
-      ]
+      "title": "Specific Job Title",
+      "company": "Real Company Name",
+      "location": "City, Country",
+      "url": "https://direct-link-to-actual-job-posting",
+      "salary": "Salary range or null"
     }
-    
-    Include up to 20 recent, relevant job listings. If no jobs found, return count: 0 and empty jobs array.`
+  ]
+}
+
+Include up to 20 RECENT, ACTIVE job listings with WORKING links. If no valid jobs found, return count: 0 and empty jobs array.`
                     }],
                     temperature: 0.2
                 })
