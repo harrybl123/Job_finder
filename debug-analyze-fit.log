@@ -111,3 +111,9 @@
 [2025-11-27T16:43:10.326Z] === NEW ANALYSIS REQUEST === 
 [2025-11-27T16:43:10.328Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Strategy Analyst"}
 [2025-11-27T16:43:10.373Z] ✅ Cache hit 
+[2025-11-27T16:49:46.920Z] === NEW ANALYSIS REQUEST === 
+[2025-11-27T16:49:46.921Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Analyst"}
+[2025-11-27T16:49:46.924Z] ✅ Cache hit 
+[2025-11-27T16:50:10.509Z] === NEW ANALYSIS REQUEST === 
+[2025-11-27T16:50:10.512Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Product Strategy Analyst"}
+[2025-11-27T16:50:10.546Z] ✅ Cache hit 

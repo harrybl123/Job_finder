@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { X, Briefcase, Star, ExternalLink, Search } from 'lucide-react';
 
 interface JobListPanelProps {
@@ -24,6 +24,8 @@ export default function JobListPanel({
     userLevel,
     userLocation = 'London'
 }: JobListPanelProps) {
+
+    const [activeCategory, setActiveCategory] = useState<'startups' | 'corporate' | 'all'>('startups');
 
     if (!isOpen) return null;
 
@@ -128,68 +130,161 @@ export default function JobListPanel({
                                 </p>
                             </div>
 
-                            {/* Indeed */}
-                            <a
-                                href={indeedUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 className="text-white font-semibold text-lg mb-1 group-hover:text-cyan-300 transition-colors">
-                                            Search on Indeed UK
-                                        </h4>
-                                        <p className="text-cyan-200 text-sm">UK's #1 job site with thousands of listings</p>
-                                    </div>
-                                    <ExternalLink className="w-5 h-5 text-cyan-400" />
-                                </div>
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-blue-500 text-white rounded-lg font-medium text-sm">
-                                    View {jobTitle} jobs →
-                                </div>
-                            </a>
+                            {/* Category Tabs */}
+                            <div className="flex gap-2 border-b border-white/10 pb-3">
+                                <button
+                                    onClick={() => setActiveCategory('startups')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeCategory === 'startups'
+                                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
+                                        : 'text-cyan-200 hover:bg-white/10'
+                                        }`}
+                                >
+                                    🚀 Startups
+                                </button>
+                                <button
+                                    onClick={() => setActiveCategory('corporate')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeCategory === 'corporate'
+                                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                                        : 'text-cyan-200 hover:bg-white/10'
+                                        }`}
+                                >
+                                    🏢 Corporate
+                                </button>
+                                <button
+                                    onClick={() => setActiveCategory('all')}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeCategory === 'all'
+                                        ? 'bg-gradient-to-r from-orange-500 to-blue-500 text-white shadow-lg'
+                                        : 'text-cyan-200 hover:bg-white/10'
+                                        }`}
+                                >
+                                    🌎 All
+                                </button>
+                            </div>
 
-                            {/* LinkedIn */}
-                            <a
-                                href={linkedinUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 className="text-white font-semibold text-lg mb-1 group-hover:text-cyan-300 transition-colors">
-                                            Search on LinkedIn Jobs
-                                        </h4>
-                                        <p className="text-cyan-200 text-sm">Professional network with curated opportunities</p>
-                                    </div>
-                                    <ExternalLink className="w-5 h-5 text-cyan-400" />
-                                </div>
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-400 text-white rounded-lg font-medium text-sm">
-                                    View {jobTitle} jobs →
-                                </div>
-                            </a>
+                            {/* Board Listings */}
+                            <div className="space-y-3">
+                                {(activeCategory === 'startups' || activeCategory === 'all') && (
+                                    <>
+                                        {/* Wellfound (AngelList) */}
+                                        <a
+                                            href={`https://wellfound.com/role/r/${encodedTitle.toLowerCase()}/${encodedLocation.toLowerCase()}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                                        Wellfound (AngelList)
+                                                        <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
+                                                    </h4>
+                                                    <p className="text-cyan-200 text-xs">Premier platform for startup jobs & equity</p>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
+                                            </div>
+                                        </a>
 
-                            {/* Reed */}
-                            <a
-                                href={reedUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-5 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                            >
-                                <div className="flex items-center justify-between mb-3">
-                                    <div>
-                                        <h4 className="text-white font-semibold text-lg mb-1 group-hover:text-cyan-300 transition-colors">
-                                            Search on Reed.co.uk
-                                        </h4>
-                                        <p className="text-cyan-200 text-sm">Specialist UK recruitment with quality listings</p>
-                                    </div>
-                                    <ExternalLink className="w-5 h-5 text-cyan-400" />
-                                </div>
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-lg font-medium text-sm">
-                                    View {jobTitle} jobs →
-                                </div>
-                            </a>
+                                        {/* Otta */}
+                                        <a
+                                            href={`https://otta.com/jobs?location=${encodedLocation}&query=${encodedTitle}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                                        Otta
+                                                        <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
+                                                    </h4>
+                                                    <p className="text-cyan-200 text-xs">UK startups & high-growth scale-ups</p>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
+                                            </div>
+                                        </a>
+
+                                        {/* Escape the City */}
+                                        <a
+                                            href={`https://www.escapethecity.org/jobs/search?query=${encodedTitle}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                                        Escape the City
+                                                        <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
+                                                    </h4>
+                                                    <p className="text-cyan-200 text-xs">Purpose-driven & alternative careers</p>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
+                                            </div>
+                                        </a>
+                                    </>
+                                )}
+
+                                {(activeCategory === 'corporate' || activeCategory === 'all') && (
+                                    <>
+                                        {/* Indeed */}
+                                        <a
+                                            href={indeedUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                                        Indeed UK
+                                                        <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded">Corporate</span>
+                                                    </h4>
+                                                    <p className="text-cyan-200 text-xs">UK's #1 job site with thousands of listings</p>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
+                                            </div>
+                                        </a>
+
+                                        {/* LinkedIn */}
+                                        <a
+                                            href={linkedinUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                                        LinkedIn Jobs
+                                                        <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded">Corporate</span>
+                                                    </h4>
+                                                    <p className="text-cyan-200 text-xs">Professional network with curated opportunities</p>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
+                                            </div>
+                                        </a>
+
+                                        {/* Reed */}
+                                        <a
+                                            href={reedUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                                        Reed.co.uk
+                                                        <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded">Corporate</span>
+                                                    </h4>
+                                                    <p className="text-cyan-200 text-xs">Specialist UK recruitment with quality listings</p>
+                                                </div>
+                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
+                                            </div>
+                                        </a>
+                                    </>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
