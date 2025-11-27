@@ -138,3 +138,6 @@
 [2025-11-27T17:13:19.123Z] === NEW ANALYSIS REQUEST === 
 [2025-11-27T17:13:19.125Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Business Operations Analyst"}
 [2025-11-27T17:13:19.129Z] ✅ Cache hit 
+[2025-11-27T17:15:56.650Z] === NEW ANALYSIS REQUEST === 
+[2025-11-27T17:15:56.654Z] Request: {"userId":"cmiewtf7r00001132qn5vafpc","jobTitle":"Product Strategy Analyst"}
+[2025-11-27T17:15:56.666Z] ✅ Cache hit 
