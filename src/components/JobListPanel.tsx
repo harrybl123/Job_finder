@@ -49,14 +49,6 @@ export default function JobListPanel({
     const levelKeyword = getLevelKeyword(userLevel);
     const searchTitle = `${levelKeyword}${jobTitle}`;
 
-    // Debug logging
-    console.log('🔍 JobListPanel Debug:', {
-        userLevel,
-        levelKeyword,
-        jobTitle,
-        searchTitle
-    });
-
     // Slugified versions for path-based URLs
     const titleSlug = slugify(searchTitle);
     const locationSlug = slugify(userLocation);
