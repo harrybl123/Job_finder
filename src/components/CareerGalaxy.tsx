@@ -681,11 +681,16 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
 
         const isJobLevel = nodeLevel >= 2; // Level 2+ can have jobs
         const shouldShowJobs = isRecommended && isWithinReach && isJobLevel;
-        const shouldExpand = !shouldShowJobs && hasChildren && !isExpanded;
+
+        // Check if children are actually visible (not just tracked as expanded)
+        const childrenVisible = node.childIds?.some(childId => visibleNodeIds.has(childId)) || false;
+        const shouldExpand = !shouldShowJobs && hasChildren && !childrenVisible;
 
         console.log('Decision:', {
             shouldShowJobs,
             shouldExpand,
+            isExpanded,
+            childrenVisible,
             reasoning: shouldShowJobs ? 'Recommended job role' : shouldExpand ? 'Expand children' : 'Nothing to do'
         });
 
