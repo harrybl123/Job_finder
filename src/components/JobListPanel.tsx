@@ -53,6 +53,40 @@ export default function JobListPanel({
     const titleSlug = slugify(searchTitle);
     const locationSlug = slugify(userLocation);
 
+    // Wellfound role mapping - they only support specific predefined categories
+    const wellfoundRoles: Record<string, string> = {
+        'software engineer': 'software-engineer',
+        'engineer': 'software-engineer',
+        'engineering manager': 'engineering-manager',
+        'ai engineer': 'artificial-intelligence-engineer-ai',
+        'machine learning engineer': 'machine-learning-engineer',
+        'ml engineer': 'machine-learning-engineer',
+        'product manager': 'product-manager',
+        'backend engineer': 'backend-engineer',
+        'mobile engineer': 'mobile-engineer',
+        'product designer': 'product-designer',
+        'frontend engineer': 'frontend-engineer',
+        'full stack engineer': 'full-stack-engineer',
+        'fullstack engineer': 'full-stack-engineer',
+        'data scientist': 'data-scientist',
+        'designer': 'designer',
+        'software architect': 'software-architect',
+        'devops engineer': 'devops-engineer'
+    };
+
+    // Find matching Wellfound role
+    const getWellfoundRole = (title: string): string | null => {
+        const lowerTitle = title.toLowerCase();
+        for (const [key, slug] of Object.entries(wellfoundRoles)) {
+            if (lowerTitle.includes(key)) {
+                return slug;
+            }
+        }
+        return null;
+    };
+
+    const wellfoundRole = getWellfoundRole(searchTitle);
+
     // URL builders for each board (custom logic per platform)
     const boardUrls = {
         // Standard query-based boards
@@ -61,9 +95,9 @@ export default function JobListPanel({
         reed: `https://www.reed.co.uk/jobs/${titleSlug}-jobs-in-${locationSlug}`,
 
         // Niche startup boards with custom URL patterns
-        wellfound: `https://wellfound.com/role/l/${titleSlug}/${locationSlug}`, // Wellfound uses /role/l/[slug]/[location]
+        wellfound: wellfoundRole ? `https://wellfound.com/role/l/${wellfoundRole}/${locationSlug}` : null,
         welcomeToJungle: `https://www.welcometothejungle.com/en/jobs?query=${encodeURIComponent(searchTitle)}&refinementList%5Boffices.country_code%5D%5B%5D=GB&refinementList%5Boffices.city%5D%5B%5D=${encodeURIComponent(userLocation)}`,
-        escapeTheCity: `https://www.escapethecity.org/jobs/search?query=${encodeURIComponent(searchTitle)}&location=${encodeURIComponent(userLocation)}`
+        escapeTheCity: `https://www.escapethecity.org/search/jobs?q=${encodeURIComponent(searchTitle)}` // Fixed: removed double encoding
     };
 
     return (
@@ -182,24 +216,26 @@ export default function JobListPanel({
                             <div className="space-y-3">
                                 {(activeCategory === 'startups' || activeCategory === 'all') && (
                                     <>
-                                        {/* Wellfound (AngelList) */}
-                                        <a
-                                            href={boardUrls.wellfound}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        Wellfound (AngelList)
-                                                        <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
-                                                    </h4>
-                                                    <p className="text-cyan-200 text-xs">Premier platform for startup jobs & equity</p>
+                                        {/* Wellfound (AngelList) - only show if role matches their categories */}
+                                        {boardUrls.wellfound && (
+                                            <a
+                                                href={boardUrls.wellfound}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex-1">
+                                                        <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                                                            Wellfound (AngelList)
+                                                            <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
+                                                        </h4>
+                                                        <p className="text-cyan-200 text-xs">Premier platform for startup jobs & equity</p>
+                                                    </div>
+                                                    <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
                                                 </div>
-                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
-                                            </div>
-                                        </a>
+                                            </a>
+                                        )}
 
                                         {/* Otta */}
                                         <a
