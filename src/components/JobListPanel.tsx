@@ -29,6 +29,15 @@ export default function JobListPanel({
 
     if (!isOpen) return null;
 
+    // Slugify helper for URL-safe strings
+    const slugify = (text: string): string => {
+        return text.toLowerCase().trim()
+            .replace(/\s+/g, '-')       // Replace spaces with -
+            .replace(/[^\w-]+/g, '')   // Remove all non-word chars
+            .replace(/--+/g, '-')      // Replace multiple - with single -
+            .replace(/^-+|-+$/g, '');  // Trim dashes from start/end
+    };
+
     // Helper to get level keyword
     const getLevelKeyword = (level?: number) => {
         if (!level) return '';
@@ -40,14 +49,22 @@ export default function JobListPanel({
     const levelKeyword = getLevelKeyword(userLevel);
     const searchTitle = `${levelKeyword}${jobTitle}`;
 
-    // Properly encode job title and location for URL
-    const encodedTitle = encodeURIComponent(searchTitle.trim());
-    const encodedLocation = encodeURIComponent(userLocation);
+    // Slugified versions for path-based URLs
+    const titleSlug = slugify(searchTitle);
+    const locationSlug = slugify(userLocation);
 
-    // Construct reliable job board search URLs with location and level
-    const indeedUrl = `https://uk.indeed.com/jobs?q=${encodedTitle}&l=${encodedLocation}`;
-    const linkedinUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodedTitle}&location=${encodedLocation}`;
-    const reedUrl = `https://www.reed.co.uk/jobs/${encodedTitle.toLowerCase().replace(/%20/g, '-')}-jobs-in-${encodedLocation.toLowerCase().replace(/%20/g, '-')}`;
+    // URL builders for each board (custom logic per platform)
+    const boardUrls = {
+        // Standard query-based boards
+        indeed: `https://uk.indeed.com/jobs?q=${encodeURIComponent(searchTitle)}&l=${encodeURIComponent(userLocation)}`,
+        linkedin: `https://www.linkedin.com/jobs/search/?keywords=${encodeURIComponent(searchTitle)}&location=${encodeURIComponent(userLocation)}`,
+        reed: `https://www.reed.co.uk/jobs/${titleSlug}-jobs-in-${locationSlug}`,
+
+        // Niche startup boards with custom URL patterns
+        wellfound: `https://wellfound.com/role/l/${titleSlug}/${locationSlug}`, // Wellfound uses /role/l/[slug]/[location]
+        welcomeToJungle: `https://www.welcometothejungle.com/en/jobs?query=${encodeURIComponent(searchTitle)}&refinementList%5Boffices.country_code%5D%5B%5D=GB&refinementList%5Boffices.city%5D%5B%5D=${encodeURIComponent(userLocation)}`,
+        escapeTheCity: `https://www.escapethecity.org/jobs/search?query=${encodeURIComponent(searchTitle)}&location=${encodeURIComponent(userLocation)}`
+    };
 
     return (
         <>
@@ -167,7 +184,7 @@ export default function JobListPanel({
                                     <>
                                         {/* Wellfound (AngelList) */}
                                         <a
-                                            href={`https://wellfound.com/role/r/${encodedTitle.toLowerCase()}/${encodedLocation.toLowerCase()}`}
+                                            href={boardUrls.wellfound}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
@@ -186,7 +203,7 @@ export default function JobListPanel({
 
                                         {/* Otta */}
                                         <a
-                                            href={`https://otta.com/jobs?location=${encodedLocation}&query=${encodedTitle}`}
+                                            href={boardUrls.welcomeToJungle}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
@@ -194,10 +211,10 @@ export default function JobListPanel({
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
                                                     <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        Otta
+                                                        Welcome to the Jungle
                                                         <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
                                                     </h4>
-                                                    <p className="text-cyan-200 text-xs">UK startups & high-growth scale-ups</p>
+                                                    <p className="text-cyan-200 text-xs">Otta rebranded - top UK & EU startups</p>
                                                 </div>
                                                 <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
                                             </div>
@@ -205,7 +222,7 @@ export default function JobListPanel({
 
                                         {/* Escape the City */}
                                         <a
-                                            href={`https://www.escapethecity.org/jobs/search?query=${encodedTitle}`}
+                                            href={boardUrls.escapeTheCity}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
@@ -228,7 +245,7 @@ export default function JobListPanel({
                                     <>
                                         {/* Indeed */}
                                         <a
-                                            href={indeedUrl}
+                                            href={boardUrls.indeed}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
@@ -247,7 +264,7 @@ export default function JobListPanel({
 
                                         {/* LinkedIn */}
                                         <a
-                                            href={linkedinUrl}
+                                            href={boardUrls.linkedin}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
@@ -266,7 +283,7 @@ export default function JobListPanel({
 
                                         {/* Reed */}
                                         <a
-                                            href={reedUrl}
+                                            href={boardUrls.reed}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
