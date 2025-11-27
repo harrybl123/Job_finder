@@ -173,7 +173,9 @@ export default function ChatInterface({ cvText, onSearchReady, compact = false, 
                 // Trigger galaxy view transition
                 onSearchReady({
                     recommendedPath: data.recommendedPath,
-                    paths: data.paths // Pass full paths object
+                    paths: data.paths, // Pass full paths object
+                    currentLevel: data.currentLevel, // Pass inferred level
+                    location: data.location // Pass inferred location (if any)
                 });
 
                 // Also trigger recommendation callback if available
