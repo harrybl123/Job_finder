@@ -97,7 +97,7 @@ export default function JobListPanel({
         // Niche startup boards with custom URL patterns
         wellfound: wellfoundRole ? `https://wellfound.com/role/l/${wellfoundRole}/${locationSlug}` : null,
         welcomeToJungle: `https://www.welcometothejungle.com/en/jobs?query=${encodeURIComponent(searchTitle)}&refinementList%5Boffices.country_code%5D%5B%5D=GB&refinementList%5Boffices.city%5D%5B%5D=${encodeURIComponent(userLocation)}`,
-        escapeTheCity: `https://www.escapethecity.org/search/jobs?q=${encodeURIComponent(searchTitle)}` // Uses /search/jobs with q param
+        workInStartups: `https://workinstartups.com/job-board/jobs/search/?keywords=${encodeURIComponent(searchTitle)}&location=${encodeURIComponent(userLocation)}` // UK startup jobs with reliable search
     };
 
     return (
@@ -256,9 +256,9 @@ export default function JobListPanel({
                                             </div>
                                         </a>
 
-                                        {/* Escape the City */}
+                                        {/* WorkInStartups */}
                                         <a
-                                            href={boardUrls.escapeTheCity}
+                                            href={boardUrls.workInStartups}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
@@ -266,10 +266,10 @@ export default function JobListPanel({
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
                                                     <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        Escape the City
+                                                        WorkInStartups
                                                         <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
                                                     </h4>
-                                                    <p className="text-cyan-200 text-xs">Purpose-driven & alternative careers</p>
+                                                    <p className="text-cyan-200 text-xs">UK's largest startup job board with 1000s+ roles</p>
                                                 </div>
                                                 <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
                                             </div>
