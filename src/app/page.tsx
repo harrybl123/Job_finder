@@ -26,6 +26,7 @@ export default function Home() {
   const [recommendationReason, setRecommendationReason] = useState<string | null>(null);
   const [allPaths, setAllPaths] = useState<any[]>([]);
   const [currentLevel, setCurrentLevel] = useState<number | null>(null);
+  const [userLocation, setUserLocation] = useState<string>('United Kingdom');
 
   // Check for returning user on page load
   useEffect(() => {
@@ -137,6 +138,11 @@ export default function Home() {
       setCurrentLevel(data.currentLevel);
     }
 
+    // Capture location if available (or try to extract from CV text later)
+    if (data.location) {
+      setUserLocation(data.location);
+    }
+
     // Capture paths array if available
     if (data.paths && data.paths.length > 0) {
       console.log('✅ [page.tsx] Setting all paths:', data.paths.length, 'paths');
@@ -198,7 +204,7 @@ export default function Home() {
 
       setSearchParams({
         queries: [query],
-        location: 'London, United Kingdom',
+        location: userLocation,
         experienceLevel: node.experienceLevel || 'entry_level',
         workType: 'full_time',
         cvText: cvText // Pass CV for relevance scoring
@@ -218,7 +224,7 @@ export default function Home() {
   const handleClusterSelection = (cluster: any) => {
     setSearchParams({
       queries: cluster.startingRoles,
-      location: 'London, United Kingdom', // Default or extracted from CV later
+      location: userLocation, // Default or extracted from CV later
       experienceLevel: 'entry_level', // Default or extracted
       workType: 'any'
     });
@@ -310,6 +316,7 @@ export default function Home() {
                 paths={allPaths}  // Pass all 3 paths
                 recommendationReason={recommendationReason || undefined}
                 currentLevel={currentLevel || undefined}
+                userLocation={userLocation}
               />
 
               {/* Floating Chat Bubble */}

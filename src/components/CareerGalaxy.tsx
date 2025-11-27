@@ -27,6 +27,7 @@ interface CareerGalaxyProps {
     }>;
     recommendationReason?: string; // Why this path is recommended
     currentLevel?: number; // User's current experience level (1-7)
+    userLocation?: string; // User's location for job search
 }
 
 // Path type colors
@@ -36,7 +37,7 @@ const PATH_COLORS: Record<string, string> = {
     'Aspirational': '#8b5cf6'      // Purple
 };
 
-export default function CareerGalaxy({ data, onNodeClick, paths, recommendationReason, currentLevel }: CareerGalaxyProps) {
+export default function CareerGalaxy({ data, onNodeClick, paths, recommendationReason, currentLevel, userLocation }: CareerGalaxyProps) {
     const { selectRole } = useConstellationStore();
     const svgRef = useRef<SVGSVGElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -50,7 +51,7 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
     const [hoveredNode, setHoveredNode] = useState<string | null>(null);
 
     // Job count state
-    const [jobCounts, setJobCounts] = useState<Record<string, { count: number, jobs?: any[], loading: boolean, reasoning?: string, keyStrengths?: string[], potentialGaps?: string[] }>>({});
+    const [jobCounts, setJobCounts] = useState<Record<string, { loading: boolean, reasoning?: string, keyStrengths?: string[], potentialGaps?: string[] }>>({});
     const [loadingJobCount, setLoadingJobCount] = useState<string | null>(null);
     const [selectedJobNodeId, setSelectedJobNodeId] = useState<string | null>(null);
 
@@ -743,7 +744,7 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
         setSelectedJobNodeId(node.id);
 
         // Fetch AI analysis of fit (but not job listings) if not already loaded
-        if (!jobCounts[node.id] && load ingJobCount !== node.id) {
+        if (!jobCounts[node.id] && loadingJobCount !== node.id) {
             setLoadingJobCount(node.id);
 
             try {
@@ -1405,33 +1406,7 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                                     </text>
                                 )}
 
-                                {/* Job count badge for Level 4 nodes */}
-                                {node.level === 4 && jobCounts[node.id] && (
-                                    <g>
-                                        {/* Badge background */}
-                                        <rect
-                                            x={-30}
-                                            y={size + 10}
-                                            width={60}
-                                            height={20}
-                                            rx={10}
-                                            fill="#10b981"
-                                            opacity="0.9"
-                                            className="animate-pulse"
-                                        />
-                                        {/* Job count text */}
-                                        <text
-                                            y={size + 24}
-                                            textAnchor="middle"
-                                            fill="#ffffff"
-                                            fontSize={11}
-                                            fontWeight="600"
-                                            className="pointer-events-none"
-                                        >
-                                            🔍 {jobCounts[node.id].count} jobs
-                                        </text>
-                                    </g>
-                                )}
+                                {/* Job count badge removed as we use direct links now */}
 
                                 {/* Loading spinner for job count */}
                                 {node.level === 4 && loadingJobCount === node.id && (
@@ -1551,17 +1526,17 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                 </div>
             </div >
             {/* Job List Panel */}
+            {/* Job List Panel */}
             <JobListPanel
                 isOpen={!!selectedJobNodeId}
                 onClose={() => setSelectedJobNodeId(null)}
                 jobTitle={selectedJobNodeId ? allPositionedNodes.allNodes.find(n => n.id === selectedJobNodeId)?.name || 'Job Listings' : ''}
-                jobs={selectedJobNodeId && jobCounts[selectedJobNodeId] ? (jobCounts[selectedJobNodeId].jobs || []) : []}
-                count={selectedJobNodeId && jobCounts[selectedJobNodeId] ? jobCounts[selectedJobNodeId].count : 0}
                 loading={selectedJobNodeId === loadingJobCount}
                 reasoning={selectedJobNodeId && jobCounts[selectedJobNodeId] ? jobCounts[selectedJobNodeId].reasoning : undefined}
                 keyStrengths={selectedJobNodeId && jobCounts[selectedJobNodeId] ? jobCounts[selectedJobNodeId].keyStrengths : undefined}
                 potentialGaps={selectedJobNodeId && jobCounts[selectedJobNodeId] ? jobCounts[selectedJobNodeId].potentialGaps : undefined}
-                onSaveJob={handleSaveJob}
+                userLevel={currentLevel}
+                userLocation={userLocation}
             />
         </div >
     );

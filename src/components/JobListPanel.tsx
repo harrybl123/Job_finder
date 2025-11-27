@@ -9,6 +9,8 @@ interface JobListPanelProps {
     keyStrengths?: string[];
     potentialGaps?: string[];
     loading?: boolean;
+    userLevel?: number;
+    userLocation?: string;
 }
 
 export default function JobListPanel({
@@ -18,19 +20,32 @@ export default function JobListPanel({
     reasoning,
     keyStrengths,
     potentialGaps,
-    loading = false
+    loading = false,
+    userLevel,
+    userLocation = 'United Kingdom'
 }: JobListPanelProps) {
 
     if (!isOpen) return null;
 
-    // Properly encode job title for URL
-    const encodedTitle = encodeURIComponent(jobTitle);
-    const encodedLocation = encodeURIComponent('United Kingdom');
+    // Helper to get level keyword
+    const getLevelKeyword = (level?: number) => {
+        if (!level) return '';
+        if (level <= 2) return 'Junior ';
+        if (level <= 5) return 'Mid-Level ';
+        return 'Senior ';
+    };
 
-    // Construct reliable job board search URLs
+    const levelKeyword = getLevelKeyword(userLevel);
+    const searchTitle = `${levelKeyword}${jobTitle}`;
+
+    // Properly encode job title and location for URL
+    const encodedTitle = encodeURIComponent(searchTitle.trim());
+    const encodedLocation = encodeURIComponent(userLocation);
+
+    // Construct reliable job board search URLs with location and level
     const indeedUrl = `https://uk.indeed.com/jobs?q=${encodedTitle}&l=${encodedLocation}`;
     const linkedinUrl = `https://www.linkedin.com/jobs/search/?keywords=${encodedTitle}&location=${encodedLocation}`;
-    const reedUrl = `https://www.reed.co.uk/jobs/${encodedTitle.toLowerCase().replace(/%20/g, '-')}-jobs`;
+    const reedUrl = `https://www.reed.co.uk/jobs/${encodedTitle.toLowerCase().replace(/%20/g, '-')}-jobs-in-${encodedLocation.toLowerCase().replace(/%20/g, '-')}`;
 
     return (
         <>
@@ -103,10 +118,15 @@ export default function JobListPanel({
                     {/* Job Board Search Links */}
                     {!loading && (
                         <div className="space-y-4">
-                            <h3 className="text-white font-semibold flex items-center gap-2">
-                                <Search className="w-5 h-5 text-cyan-400" />
-                                Search on Job Boards
-                            </h3>
+                            <div className="mb-4">
+                                <h3 className="text-white font-semibold flex items-center gap-2 mb-2">
+                                    <Search className="w-5 h-5 text-cyan-400" />
+                                    Search on Job Boards
+                                </h3>
+                                <p className="text-cyan-300 text-sm">
+                                    Searching for: <span className="font-semibold text-white">{searchTitle}</span> in <span className="font-semibold text-white">{userLocation}</span>
+                                </p>
+                            </div>
 
                             {/* Indeed */}
                             <a

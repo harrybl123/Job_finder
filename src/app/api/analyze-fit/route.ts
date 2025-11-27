@@ -92,25 +92,16 @@ CV Summary:
 - Education: ${JSON.stringify(parsedCV.education || [])}
 - Summary: ${parsedCV.summary || 'None provided'}
 
-TASK: Generate an intelligent job search query that will find "${jobTitle}" roles SPECIFICALLY suitable for THIS person, not just generic ${jobTitle} jobs.
+TASK: Analyze how well this candidate fits the role of "${jobTitle}".
 
-Consider:
-1. **Transferable skills** - What from their background applies?
-2. **Career trajectory** - Are they transitioning? Leveling up?
-3. **Hidden strengths** - What do they bring that's unique?
-4. **Level appropriateness** - Junior/Mid/Senior based on experience
-5. **Industry context** - What industries match their background?
-6. **Red flags to avoid** - What types of ${jobTitle} roles would be a BAD fit?
-
-Return ONLY a JSON object (no markdown, no explanation):
+Return ONLY a JSON object with this exact structure:
 {
-  "intelligentQuery": "detailed search string for Perplexity that captures their unique fit",
-  "reasoning": "1-2 sentence explanation of why this fits them",
-  "keyStrengths": ["strength1", "strength2", "strength3"],
-  "potentialGaps": ["gap1", "gap2"]
+  "reasoning": "A 2-3 sentence explanation of WHY this role is a good fit for them specifically, highlighting transferable skills.",
+  "keyStrengths": ["Strength 1", "Strength 2", "Strength 3"],
+  "potentialGaps": ["Gap 1", "Gap 2"]
 }
 
-Be specific and actionable. The search query should help find jobs they'll ACTUALLY get interviews for.`
+Focus on providing encouraging but realistic career advice. The reasoning should be written directly to the user (use "You").`
             }]
         });
 
@@ -135,6 +126,9 @@ Be specific and actionable. The search query should help find jobs they'll ACTUA
         const expiresAt = new Date();
         expiresAt.setDate(expiresAt.getDate() + 30);
 
+        // Fallback for intelligentQuery since we removed it from prompt but DB requires it
+        const intelligentQuery = analysis.intelligentQuery || jobTitle;
+
         await prisma.careerAnalysis.upsert({
             where: {
                 userId_jobTitle: { userId, jobTitle }
@@ -142,14 +136,14 @@ Be specific and actionable. The search query should help find jobs they'll ACTUA
             create: {
                 userId,
                 jobTitle,
-                intelligentQuery: analysis.intelligentQuery,
+                intelligentQuery,
                 reasoning: analysis.reasoning,
                 keyStrengths: JSON.stringify(analysis.keyStrengths || []),
                 potentialGaps: JSON.stringify(analysis.potentialGaps || []),
                 expiresAt
             },
             update: {
-                intelligentQuery: analysis.intelligentQuery,
+                intelligentQuery,
                 reasoning: analysis.reasoning,
                 keyStrengths: JSON.stringify(analysis.keyStrengths || []),
                 potentialGaps: JSON.stringify(analysis.potentialGaps || []),
@@ -160,7 +154,7 @@ Be specific and actionable. The search query should help find jobs they'll ACTUA
         logToFile('💾 Analysis saved to cache');
 
         return NextResponse.json({
-            intelligentQuery: analysis.intelligentQuery,
+            intelligentQuery,
             reasoning: analysis.reasoning,
             keyStrengths: analysis.keyStrengths,
             potentialGaps: analysis.potentialGaps,
