@@ -22,7 +22,7 @@ export default function JobListPanel({
     potentialGaps,
     loading = false,
     userLevel,
-    userLocation = 'United Kingdom'
+    userLocation = 'London'
 }: JobListPanelProps) {
 
     if (!isOpen) return null;

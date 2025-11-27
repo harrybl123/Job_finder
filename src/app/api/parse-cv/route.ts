@@ -11,6 +11,7 @@ interface ParsedCV {
   name: string;
   email?: string;
   phone?: string;
+  location?: string;  // City or region where they're based/looking for jobs
   summary: string;
   yearsExperience?: number;
   currentLevel?: number;
@@ -69,6 +70,7 @@ Return ONLY a JSON object with this exact structure (no markdown, no explanation
   "name": "Full Name",
   "email": "email@example.com",
   "phone": "phone number",
+  "location": "City name (e.g. 'London', 'Manchester', 'Birmingham')",
   "summary": "Brief professional summary",
   "yearsExperience": 5,
   "currentLevel": 3,
@@ -90,6 +92,12 @@ Return ONLY a JSON object with this exact structure (no markdown, no explanation
     }
   ]
 }
+
+IMPORTANT: For location:
+- Extract the city/region where they're based or looking for work
+- Look for addresses, contact info, or statements like "Based in London"
+- Just return the city name (e.g., "London", not "London, UK")
+- If not found, return null
 
 IMPORTANT: For yearsExperience and currentLevel:
 - Count TOTAL years of professional work experience (not just current role)

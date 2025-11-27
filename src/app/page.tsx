@@ -26,7 +26,7 @@ export default function Home() {
   const [recommendationReason, setRecommendationReason] = useState<string | null>(null);
   const [allPaths, setAllPaths] = useState<any[]>([]);
   const [currentLevel, setCurrentLevel] = useState<number | null>(null);
-  const [userLocation, setUserLocation] = useState<string>('United Kingdom');
+  const [userLocation, setUserLocation] = useState<string>('London');
 
   // Check for returning user on page load
   useEffect(() => {
@@ -124,8 +124,15 @@ export default function Home() {
     }
   };
 
-  const handleUploadComplete = (text: string) => {
+  const handleUploadComplete = (text: string, parsedData?: any) => {
     setCvText(text);
+
+    // Extract location from parsed CV if available
+    if (parsedData?.location) {
+      console.log('📍 Setting location from CV:', parsedData.location);
+      setUserLocation(parsedData.location);
+    }
+
     setStep('chat');
   };
 

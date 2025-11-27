@@ -5,7 +5,7 @@ import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-reac
 import { setUserId } from '@/lib/userSession';
 
 interface CVUploadProps {
-    onUploadComplete: (text: string) => void;
+    onUploadComplete: (text: string, parsedData?: any) => void;
 }
 
 export default function CVUpload({ onUploadComplete }: CVUploadProps) {
@@ -66,9 +66,12 @@ export default function CVUpload({ onUploadComplete }: CVUploadProps) {
             // Show success message to user
             if (data.parsed) {
                 console.log('✅ CV parsed:', data.parsed.name);
+                if (data.parsed.location) {
+                    console.log('📍 Location extracted:', data.parsed.location);
+                }
             }
 
-            onUploadComplete(data.text);
+            onUploadComplete(data.text, data.parsed);
         } catch (err: any) {
             console.error('Upload error:', err);
             setError(err.message || 'Upload failed. Please try the text option instead.');
