@@ -38,12 +38,12 @@ export default function JobListPanel({
             .replace(/^-+|-+$/g, '');  // Trim dashes from start/end
     };
 
-    // Helper to get level keyword
+    // Helper to get level keyword for job searches
     const getLevelKeyword = (level?: number) => {
         if (!level) return '';
-        if (level <= 2) return 'Junior ';
-        if (level <= 5) return 'Mid-Level ';
-        return 'Senior ';
+        if (level <= 2) return 'Entry Level ';      // Levels 1-2: Entry/Junior
+        if (level <= 5) return 'Mid Level ';        // Levels 3-5: Mid-level
+        return 'Senior ';                           // Levels 6+: Senior
     };
 
     const levelKeyword = getLevelKeyword(userLevel);
