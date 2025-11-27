@@ -97,7 +97,7 @@ export default function JobListPanel({
         // Niche startup boards with custom URL patterns
         wellfound: wellfoundRole ? `https://wellfound.com/role/l/${wellfoundRole}/${locationSlug}` : null,
         welcomeToJungle: `https://www.welcometothejungle.com/en/jobs?query=${encodeURIComponent(searchTitle)}&refinementList%5Boffices.country_code%5D%5B%5D=GB&refinementList%5Boffices.city%5D%5B%5D=${encodeURIComponent(userLocation)}`,
-        escapeTheCity: `https://www.escapethecity.org/search/jobs?query=${encodeURIComponent(searchTitle)}` // Uses 'query' param, not 'q'
+        escapeTheCity: `https://www.escapethecity.org/search/jobs?q=${encodeURIComponent(searchTitle)}` // Uses /search/jobs with q param
     };
 
     return (
