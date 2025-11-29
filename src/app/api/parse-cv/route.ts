@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { extractText } from 'unpdf';
 import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/prisma';
+import { getOrCreateUser } from '@/lib/clerkAuth';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -135,40 +136,21 @@ If any field is not found, use null or empty array. Be comprehensive with skills
     // Step 3: Save to database
     console.log('💾 Saving to database...');
 
-    let user;
-    if (parsedCV.email) {
-      // If email exists, upsert (update if exists, create if not)
-      user = await prisma.user.upsert({
-        where: { email: parsedCV.email },
-        update: {
-          name: parsedCV.name || undefined,
-          parsedCV: JSON.stringify(parsedCV),
-          currentLevel: parsedCV.currentLevel || null,
-          yearsExperience: parsedCV.yearsExperience || null,
-          updatedAt: new Date()
-        },
-        create: {
-          name: parsedCV.name || 'Anonymous',
-          email: parsedCV.email,
-          parsedCV: JSON.stringify(parsedCV),
-          currentLevel: parsedCV.currentLevel || null,
-          yearsExperience: parsedCV.yearsExperience || null
-        }
-      });
-      console.log('✅ User upserted:', user.id, `Level: ${user.currentLevel}, Years: ${user.yearsExperience}`);
-    } else {
-      // If no email, just create a new user
-      user = await prisma.user.create({
-        data: {
-          name: parsedCV.name || 'Anonymous',
-          email: null,
-          parsedCV: JSON.stringify(parsedCV),
-          currentLevel: parsedCV.currentLevel || null,
-          yearsExperience: parsedCV.yearsExperience || null
-        }
-      });
-      console.log('✅ User created:', user.id, `Level: ${user.currentLevel}, Years: ${user.yearsExperience}`);
-    }
+    // Get or create user from Clerk authentication
+    const user = await getOrCreateUser();
+
+    // Update user's CV data and experience level
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        parsedCV: JSON.stringify(parsedCV),
+        currentLevel: parsedCV.currentLevel || null,
+        yearsExperience: parsedCV.yearsExperience || null,
+        updatedAt: new Date()
+      }
+    });
+
+    console.log('✅ User CV updated:', user.id, `Level: ${parsedCV.currentLevel}, Years: ${parsedCV.yearsExperience}`);
 
     return NextResponse.json({
       text: text.trim(),

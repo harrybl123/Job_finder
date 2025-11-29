@@ -1432,7 +1432,7 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
             </svg >
 
             {/* Controls */}
-            <div className="absolute top-20 right-4 flex flex-col gap-2 z-20">
+            <div className="absolute top-20 right-4 flex flex-col gap-2 z-20 items-end">
                 {/* Zoom In */}
                 <button
                     onClick={() => zoom('in')}
@@ -1489,10 +1489,11 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                             alert('Failed to clear data. Try refreshing the page.');
                         }
                     }}
-                    className="w-10 h-10 bg-orange-600/80 hover:bg-orange-500/90 backdrop-blur-md border border-white/20 rounded-lg flex items-center justify-center text-white text-lg transition-all hover:scale-110"
-                    title="Start Over"
+                    className="h-10 px-4 bg-orange-600/80 hover:bg-orange-500/90 backdrop-blur-md border border-white/20 rounded-lg flex items-center justify-center gap-2 text-white font-medium transition-all hover:scale-105 whitespace-nowrap"
+                    title="Start New Career Search"
                 >
-                    🔄
+                    <span>🔄</span>
+                    <span>Start New Search</span>
                 </button>
             </div>
 

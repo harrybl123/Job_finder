@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { getUserId } from '@/lib/clerkAuth';
 
 export async function POST(req: NextRequest) {
     try {
-        const { userId, paths, reasoning } = await req.json();
+        const userId = await getUserId();
+        const { paths, reasoning } = await req.json();
 
-        if (!userId || !paths) {
+        if (!paths) {
             return NextResponse.json(
-                { error: 'userId and paths are required' },
+                { error: 'paths are required' },
                 { status: 400 }
             );
         }
@@ -35,32 +37,30 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             error: 'Failed to save recommendation',
             details: error.message
-        }, { status: 500 });
+        }, { status: error.message.includes('Unauthorized') ? 401 : 500 });
     }
 }
 
 // Get recommendations for a user
 export async function GET(req: NextRequest) {
     try {
-        const { searchParams } = new URL(req.url);
-        const userId = searchParams.get('userId');
-
-        if (!userId) {
-            return NextResponse.json(
-                { error: 'userId is required' },
-                { status: 400 }
-            );
-        }
+        const userId = await getUserId();
 
         const recommendations = await prisma.careerRecommendation.findMany({
             where: { userId },
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: {
+                user: {
+                    select: { currentLevel: true }
+                }
+            }
         });
 
         // Parse the JSON strings back to objects
         const parsed = recommendations.map(rec => ({
             ...rec,
-            paths: JSON.parse(rec.paths)
+            paths: JSON.parse(rec.paths),
+            userLevel: rec.user.currentLevel // Hoist level to top level
         }));
 
         return NextResponse.json({ recommendations: parsed });
@@ -71,6 +71,6 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({
             error: 'Failed to fetch recommendations',
             details: error.message
-        }, { status: 500 });
+        }, { status: error.message.includes('Unauthorized') ? 401 : 500 });
     }
 }

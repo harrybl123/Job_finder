@@ -2,7 +2,6 @@
 
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
-import { setUserId } from '@/lib/userSession';
 
 interface CVUploadProps {
     onUploadComplete: (text: string, parsedData?: any) => void;
@@ -56,12 +55,6 @@ export default function CVUpload({ onUploadComplete }: CVUploadProps) {
             }
 
             const data = await response.json();
-
-            // Save userId to localStorage for future use
-            if (data.userId) {
-                setUserId(data.userId);
-                console.log('✅ User ID saved:', data.userId);
-            }
 
             // Show success message to user
             if (data.parsed) {

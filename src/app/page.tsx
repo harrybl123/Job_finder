@@ -1,344 +1,158 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import CVUpload from '@/components/CVUpload';
-import ChatInterface from '@/components/ChatInterface';
+import Link from 'next/link';
+import { ArrowRight, Sparkles, Target, Zap, Globe, Shield } from 'lucide-react';
+import Navbar from '@/components/Navbar';
 
-import { Sparkles } from 'lucide-react';
-import CareerPathSelector from '@/components/CareerPathSelector';
-import CareerGalaxy from '@/components/CareerGalaxy';
-import FloatingChatBubble from '@/components/FloatingChatBubble';
-import { useConstellationStore } from '@/hooks/useConstellationStore';
-import { constellationData } from '@/data/constellationData';
-import { getUserId } from '@/lib/userSession';
+export default function LandingPage() {
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [sparkles, setSparkles] = useState<Array<{ id: number; x: number; y: number }>>([]);
 
-export default function Home() {
-  const [step, setStep] = useState<'upload' | 'chat' | 'galaxy' | 'results'>('upload');
-  const [cvText, setCvText] = useState('');
-  const [searchParams, setSearchParams] = useState<any>({});
-  const [chatMessages, setChatMessages] = useState<any[]>([]);
-  const [careerClusters, setCareerClusters] = useState<any>(null);
-  const [selectedNode, setSelectedNode] = useState<any>(null);
-  const [isReturningUser, setIsReturningUser] = useState(false);
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            setMousePos({ x: e.clientX, y: e.clientY });
 
-  // AI Recommendation state
-  const [recommendedPath, setRecommendedPath] = useState<string[] | null>(null);
-  const [recommendationReason, setRecommendationReason] = useState<string | null>(null);
-  const [allPaths, setAllPaths] = useState<any[]>([]);
-  const [currentLevel, setCurrentLevel] = useState<number | null>(null);
-  const [userLocation, setUserLocation] = useState<string>('London');
-
-  // Check for returning user on page load
-  useEffect(() => {
-    const checkReturningUser = async () => {
-      // Check if user just clicked "Start Over"
-      const freshStart = sessionStorage.getItem('freshStart');
-      if (freshStart) {
-        console.log('🆕 Fresh start detected - skipping auto-load');
-        sessionStorage.removeItem('freshStart');
-        return; // Don't load any saved data
-      }
-
-      const userId = getUserId();
-
-      if (userId) {
-        console.log('🔄 Returning user detected:', userId);
-        setIsReturningUser(true);
-
-        try {
-          // Fetch saved recommendations
-          const recResponse = await fetch(`/api/save-recommendation?userId=${userId}`);
-
-          if (recResponse.ok) {
-            const data = await recResponse.json();
-
-            if (data.recommendations && data.recommendations.length > 0) {
-              const latestRec = data.recommendations[0]; // Most recent
-              console.log('✅ Loaded saved recommendation:', latestRec.id);
-
-              // Restore the paths
-              setAllPaths(latestRec.paths);
-              setRecommendationReason(latestRec.reasoning);
-
-              // Extract primary path (first path's nodeIds)
-              if (latestRec.paths && latestRec.paths.length > 0) {
-                setRecommendedPath(latestRec.paths[0].nodeIds);
-
-                // Auto-navigate to Galaxy view
-                // setStep('galaxy'); // User requested to stop auto-navigation
-                console.log('🌌 Data loaded, ready for Galaxy view');
-              }
+            // Add sparkle particles
+            if (Math.random() > 0.7) { // 30% chance to spawn sparkle
+                const newSparkle = {
+                    id: Date.now() + Math.random(),
+                    x: e.clientX + (Math.random() - 0.5) * 100,
+                    y: e.clientY + (Math.random() - 0.5) * 100,
+                };
+                setSparkles(prev => [...prev.slice(-10), newSparkle]); // Keep last 10 sparkles
             }
-          }
+        };
 
-          // Fetch chat history
-          const chatResponse = await fetch(`/api/chat-history?userId=${userId}`);
-          if (chatResponse.ok) {
-            const chatData = await chatResponse.json();
-            if (chatData.messages && chatData.messages.length > 0) {
-              console.log('💬 Loaded saved chat history:', chatData.messages.length, 'messages');
-              setChatMessages(chatData.messages);
-            }
-          }
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
 
-        } catch (error) {
-          console.error('Failed to load saved user data:', error);
-          // Don't block the user, just continue normally
-        }
-      }
-    };
+    return (
+        <main className="min-h-screen bg-slate-950 text-white selection:bg-cyan-500/30">
+            <Navbar />
 
-    checkReturningUser();
-  }, []);
+            {/* Hero Section */}
+            <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+                {/* Cursor spotlight and sparkles */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                    {/* Smooth cursor spotlight */}
+                    <div
+                        className="absolute w-[500px] h-[500px] rounded-full transition-all duration-200 ease-out"
+                        style={{
+                            left: `${mousePos.x}px`,
+                            top: `${mousePos.y}px`,
+                            transform: 'translate(-50%, -50%)',
+                            background: 'radial-gradient(circle, rgba(34, 211, 238, 0.2) 0%, rgba(168, 85, 247, 0.15) 40%, transparent 70%)',
+                            filter: 'blur(60px)',
+                            mixBlendMode: 'screen'
+                        }}
+                    />
 
-  // Handle "Start Over" - clear all data and reset state
-  const handleStartOver = async () => {
-    if (!confirm('Start over? This will clear your chat history and recommendations.')) {
-      return;
-    }
-
-    try {
-      // Clear localStorage
-      const userId = localStorage.getItem('userId');
-      if (userId) {
-        // Delete chat messages from DB
-        await fetch('/api/chat-history', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId })
-        });
-      }
-      localStorage.removeItem('userId');
-
-      // Reset all state
-      setCvText('');
-      setChatMessages([]);
-      setRecommendedPath(null);
-      setAllPaths([]);
-      setStep('upload');
-
-      console.log('✅ Cleared all data - starting fresh!');
-    } catch (error) {
-      console.error('Error clearing data:', error);
-      alert('Failed to clear data. Try refreshing the page.');
-    }
-  };
-
-  const handleUploadComplete = (text: string, parsedData?: any) => {
-    setCvText(text);
-
-    // Extract location from parsed CV if available
-    if (parsedData?.location) {
-      console.log('📍 Setting location from CV:', parsedData.location);
-      setUserLocation(parsedData.location);
-    }
-
-    setStep('chat');
-  };
-
-  const handleSearchReady = (data: any) => {
-    console.log('🔍 [page.tsx] handleSearchReady called with data:', data);
-
-    // Capture currentLevel if available
-    if (data.currentLevel) {
-      console.log('📊 [page.tsx] Setting current level:', data.currentLevel);
-      setCurrentLevel(data.currentLevel);
-    }
-
-    // Capture location if available (or try to extract from CV text later)
-    if (data.location) {
-      setUserLocation(data.location);
-    }
-
-    // Capture paths array if available
-    if (data.paths && data.paths.length > 0) {
-      console.log('✅ [page.tsx] Setting all paths:', data.paths.length, 'paths');
-      console.log('   Paths structure:', data.paths.map((p: any) => ({
-        type: p.type,
-        hasPathNodes: !!p.pathNodes,
-        pathNodesCount: p.pathNodes?.length || 0,
-        hasNodeIds: !!p.nodeIds,
-        nodeIdsCount: p.nodeIds?.length || 0
-      })));
-      setAllPaths(data.paths);
-    } else {
-      console.log('⚠️ [page.tsx] No paths in data');
-    }
-
-    if (data.recommendedPath) {
-      console.log('✅ [page.tsx] Setting recommended path:', data.recommendedPath);
-      setRecommendedPath(data.recommendedPath);
-
-      // Transition to galaxy view
-      if (step !== 'galaxy') {
-        console.log('🌌 [page.tsx] Transitioning to galaxy view');
-        setStep('galaxy');
-      }
-    } else if (data.clusters) {
-      console.log('Setting career clusters:', data.clusters);
-      setCareerClusters(data.clusters);
-      // Transition to galaxy view
-      if (step !== 'galaxy') {
-        setStep('galaxy');
-      }
-    } else if (data.queries) {
-      // Fallback for legacy or direct search params
-      console.log('Setting search params:', data);
-      setSearchParams(data);
-      // Don't switch to 'results' if we're already in galaxy view
-      // This keeps the split-screen layout intact
-      if (step !== 'galaxy') {
-        setStep('galaxy'); // Force galaxy view even for legacy queries
-      }
-    } else {
-      console.warn('No clusters, recommendedPath, or queries in data');
-    }
-  };
-
-  const handleNodeClick = (node: any) => {
-    console.log('Node clicked:', node);
-    setSelectedNode(node);
-
-    // Level 4 nodes are job titles - trigger job search
-    if (node.level === 4 || node.type === 'role') {
-      console.log('Triggering job search for:', node.name);
-
-      // Check if this node is part of a recommended path to use the optimized query
-      const matchingPath = allPaths.find(path => path.nodeIds.includes(node.id));
-      const query = matchingPath?.optimizedSearchQuery || node.name;
-
-      console.log('Using query:', query, matchingPath ? '(Optimized)' : '(Default)');
-
-      setSearchParams({
-        queries: [query],
-        location: userLocation,
-        experienceLevel: node.experienceLevel || 'entry_level',
-        workType: 'full_time',
-        cvText: cvText // Pass CV for relevance scoring
-      });
-    }
-  };
-
-  const handleRecommendationReceived = (nodeIds: string[], reasoning: string, paths?: any[]) => {
-    console.log('Recommendations received in page.tsx:', nodeIds, reasoning);
-    setRecommendedPath(nodeIds);
-    setRecommendationReason(reasoning);
-    if (paths) {
-      setAllPaths(paths);
-    }
-  };
-
-  const handleClusterSelection = (cluster: any) => {
-    setSearchParams({
-      queries: cluster.startingRoles,
-      location: userLocation, // Default or extracted from CV later
-      experienceLevel: 'entry_level', // Default or extracted
-      workType: 'any'
-    });
-    setStep('galaxy');
-  };
-
-  const handleMessagesUpdate = (messages: any[]) => {
-    setChatMessages(messages);
-  };
-
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
-      {/* Animated gradient orbs */}
-      <div className="absolute top-0 -left-4 w-72 h-72 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-      <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-      {/* Main Content */}
-      <div className="relative z-10 w-full max-w-[95%] mx-auto px-4 py-8 flex flex-col items-center min-h-screen">
-
-        {/* Logo & Header */}
-        <div className={`transition-all duration-500 flex flex-col items-center ${step === 'results' || step === 'galaxy' ? 'scale-75 mb-4' : 'mb-12'}`}>
-          <div className="w-24 h-24 mb-6 relative group">
-            <div className="absolute inset-0 bg-orange-500 blur-2xl opacity-20 group-hover:opacity-40 transition-opacity rounded-full"></div>
-            <img
-              src="/logo.png"
-              alt="Career Navigator"
-              className="w-full h-full object-contain relative z-10 drop-shadow-2xl"
-            />
-          </div>
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-orange-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-            Career Navigator
-          </h1>
-          <p className="text-xl text-blue-200 text-center max-w-2xl">
-            Your AI-powered career exploration platform
-          </p>
-        </div>
-
-        <div className="w-full space-y-6">
-          {step === 'upload' && (
-            <div className="max-w-4xl mx-auto space-y-4">
-              <div className="bg-white/10 backdrop-blur-xl p-10 rounded-3xl shadow-2xl border border-white/20">
-                <CVUpload onUploadComplete={handleUploadComplete} />
-              </div>
-              {/* Debug Button */}
-              <button
-                onClick={() => {
-                  // Just go straight to galaxy view, no mock data needed
-                  setStep('galaxy');
-                }}
-                className="text-xs text-white/30 hover:text-white/80 transition-colors mx-auto block"
-              >
-                [Debug] Test Career Galaxy
-              </button>
-            </div>
-          )}
-
-          {step === 'chat' && (
-            <div className="max-w-4xl mx-auto space-y-6">
-              <ChatInterface
-                cvText={cvText}
-                onSearchReady={handleSearchReady}
-                initialMessages={chatMessages.length > 0 ? chatMessages : undefined}
-                onMessagesUpdate={handleMessagesUpdate}
-                onRecommendationReceived={handleRecommendationReceived}
-              />
-
-
-            </div>
-          )}
-
-          {step === 'galaxy' && (
-            <div className="fixed inset-0 bg-slate-950">
-              {/* Welcome Back Banner for Returning Users */}
-              {isReturningUser && (
-                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 animate-fade-in">
-                  <div className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-lg border border-blue-400/30 rounded-2xl px-6 py-3 shadow-2xl">
-                    <p className="text-blue-100 font-medium flex items-center gap-2">
-                      <Sparkles className="w-5 h-5 text-blue-400" />
-                      Welcome back! Your career journey continues...
-                    </p>
-                  </div>
+                    {/* Sparkle particles */}
+                    {sparkles.map(sparkle => (
+                        <div
+                            key={sparkle.id}
+                            className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-sparkle"
+                            style={{
+                                left: `${sparkle.x}px`,
+                                top: `${sparkle.y}px`,
+                                boxShadow: '0 0 10px 2px rgba(34, 211, 238, 0.8)',
+                            }}
+                        />
+                    ))}
                 </div>
-              )}
 
-              {/* Full-Screen Galaxy */}
-              <CareerGalaxy
-                data={careerClusters}
-                onNodeClick={handleNodeClick}
-                paths={allPaths}  // Pass all 3 paths
-                recommendationReason={recommendationReason || undefined}
-                currentLevel={currentLevel || undefined}
-                userLocation={userLocation}
-              />
+                <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 mb-8 animate-fade-in">
+                        <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                        </span>
+                        <span className="text-sm text-cyan-200 font-medium">AI-Powered Career Navigation</span>
+                    </div>
 
-              {/* Floating Chat Bubble */}
-              <FloatingChatBubble
-                cvText={cvText}
-                onRecommendationReceived={handleRecommendationReceived}
-                onMessagesUpdate={handleMessagesUpdate}
-                initialMessages={chatMessages}
-              />
-            </div>
-          )}
+                    <h1 className="text-5xl lg:text-7xl font-bold tracking-tight mb-8 bg-gradient-to-b from-white via-white to-slate-400 bg-clip-text text-transparent">
+                        Navigate Your <br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Career Galaxy</span>
+                    </h1>
 
+                    <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                        Stop searching blindly. Let AI analyze your skills, map your potential paths, and guide you to the perfect role with precision.
+                    </p>
 
-        </div>
-      </div>
-    </main>
-  );
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                        <Link
+                            href="/dashboard"
+                            className="group relative px-8 py-4 bg-white text-slate-900 rounded-xl font-semibold text-lg hover:bg-cyan-50 transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(255,255,255,0.3)]"
+                        >
+                            Start Your Journey
+                            <ArrowRight className="inline-block ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                        <Link
+                            href="#features"
+                            className="px-8 py-4 bg-white/5 text-white rounded-xl font-semibold text-lg hover:bg-white/10 transition-all border border-white/10"
+                        >
+                            How it Works
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* Features Grid */}
+            <section id="features" className="py-24 bg-slate-900/50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl font-bold mb-4">Why Choose Career Navigator?</h2>
+                        <p className="text-slate-400 max-w-2xl mx-auto">
+                            Traditional job boards are broken. We use advanced AI to match you based on skills, potential, and cultural fit—not just keywords.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        {[
+                            {
+                                icon: <Sparkles className="w-6 h-6 text-purple-400" />,
+                                title: "AI Skill Analysis",
+                                description: "Upload your CV and let our AI decode your true potential, identifying transferable skills you didn't know you had."
+                            },
+                            {
+                                icon: <Target className="w-6 h-6 text-cyan-400" />,
+                                title: "Smart Matching",
+                                description: "Get matched with roles that fit your experience level and career goals, filtering out noise automatically."
+                            },
+                            {
+                                icon: <Globe className="w-6 h-6 text-emerald-400" />,
+                                title: "Visual Career Galaxy",
+                                description: "Explore your career possibilities in an interactive 3D map. See where you are and where you could go."
+                            }
+                        ].map((feature, idx) => (
+                            <div key={idx} className="p-8 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                                <div className="w-12 h-12 bg-slate-900 rounded-lg flex items-center justify-center mb-6 border border-white/10">
+                                    {feature.icon}
+                                </div>
+                                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                                <p className="text-slate-400 leading-relaxed">
+                                    {feature.description}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Footer */}
+            <footer className="py-12 border-t border-white/10 bg-slate-950">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="w-5 h-5 text-cyan-500" />
+                        <span className="font-semibold">Jobsworth</span>
+                    </div>
+                    <p className="text-slate-500 text-sm">
+                        © {new Date().getFullYear()} Jobsworth. All rights reserved.
+                    </p>
+                </div>
+            </footer>
+        </main>
+    );
 }

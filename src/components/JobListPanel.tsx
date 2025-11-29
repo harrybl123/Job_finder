@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Briefcase, Star, ExternalLink, Search } from 'lucide-react';
+import { X, Briefcase, Star, ExternalLink, Search, FileText } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface JobListPanelProps {
     isOpen: boolean;
@@ -100,34 +101,99 @@ export default function JobListPanel({
         adzuna: `https://www.adzuna.co.uk/jobs/search?q=${encodeURIComponent(searchTitle)}&w=${encodeURIComponent(userLocation)}&ac_where=1` // Adzuna job aggregator
     };
 
+    const router = useRouter();
+
+    const handleWriteCoverLetter = () => {
+        // Filter out null values and create a clean object
+        const activeLinks = Object.fromEntries(
+            Object.entries(boardUrls).filter(([_, url]) => url !== null)
+        );
+
+        const params = new URLSearchParams({
+            jobTitle: searchTitle, // Use the level-aware title
+            jobLinks: JSON.stringify(activeLinks)
+        });
+        router.push(`/dashboard/cover-letter?${params.toString()}`);
+    };
+
+    const handleTestInterview = () => {
+        const params = new URLSearchParams({
+            jobTitle: searchTitle, // Use the level-aware title
+            company: 'Target Company',
+            jobDescription: `Interview for the role of ${searchTitle}`
+        });
+        router.push(`/dashboard/interview?${params.toString()}`);
+    };
+
+    const renderJobBoardCard = (name: string, url: string, type: 'Startups' | 'Corporate', description: string) => (
+        <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
+        >
+            <div className="flex items-center justify-between">
+                <div className="flex-1">
+                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
+                        {name}
+                        <span className={`text-xs px-2 py-0.5 rounded ${type === 'Startups' ? 'bg-purple-500/30 text-purple-200' : 'bg-blue-500/30 text-blue-200'}`}>
+                            {type}
+                        </span>
+                    </h4>
+                    <p className="text-cyan-200 text-xs">{description}</p>
+                </div>
+                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
+            </div>
+        </a>
+    );
+
     return (
         <>
             {/* Backdrop */}
             <div
-                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 animate-fade-in"
+                className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 animate-fade-in"
                 onClick={onClose}
             />
 
             {/* Panel */}
             <div
-                className="fixed right-0 top-0 h-full w-full max-w-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 shadow-2xl z-50 overflow-y-auto overscroll-contain animate-slide-in-right"
+                className="fixed right-0 top-0 h-full w-full max-w-2xl bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 shadow-2xl z-50 overflow-y-auto overscroll-contain animate-slide-in-right pt-16"
                 onWheel={(e) => e.stopPropagation()}
             >
 
                 {/* Header */}
-                <div className="sticky top-0 bg-slate-900/95 backdrop-blur-lg border-b border-white/10 p-6 flex items-start justify-between z-10">
-                    <div>
-                        <h2 className="text-2xl font-bold text-white mb-1">{jobTitle}</h2>
-                        <p className="text-cyan-300 text-sm">
-                            Search for jobs on major UK job boards
-                        </p>
+                <div className="sticky top-0 bg-slate-900/95 backdrop-blur-lg border-b border-white/10 p-6 z-10">
+                    <div className="flex items-start justify-between mb-4">
+                        <div>
+                            <h2 className="text-2xl font-bold text-white mb-1">{jobTitle}</h2>
+                            <p className="text-cyan-300 text-sm">
+                                Search for jobs on major UK job boards
+                            </p>
+                        </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        >
+                            <X className="w-6 h-6 text-white" />
+                        </button>
                     </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                    >
-                        <X className="w-6 h-6 text-white" />
-                    </button>
+
+                    <div className="flex gap-3">
+                        <button
+                            onClick={handleWriteCoverLetter}
+                            className="flex-1 py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-xl font-semibold shadow-lg transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+                        >
+                            <FileText className="w-5 h-5" />
+                            Write Cover Letter
+                        </button>
+                        <button
+                            onClick={handleTestInterview}
+                            className="flex-1 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white rounded-xl font-semibold shadow-lg transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+                        >
+                            <Briefcase className="w-5 h-5" />
+                            Practice Interview
+                        </button>
+                    </div>
                 </div>
 
                 <div className="p-6 space-y-6">
@@ -216,125 +282,51 @@ export default function JobListPanel({
                             <div className="space-y-3">
                                 {(activeCategory === 'startups' || activeCategory === 'all') && (
                                     <>
-                                        {/* Wellfound (AngelList) - only show if role matches their categories */}
-                                        {boardUrls.wellfound && (
-                                            <a
-                                                href={boardUrls.wellfound}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <div className="flex-1">
-                                                        <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                            Wellfound (AngelList)
-                                                            <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
-                                                        </h4>
-                                                        <p className="text-cyan-200 text-xs">Premier platform for startup jobs & equity</p>
-                                                    </div>
-                                                    <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
-                                                </div>
-                                            </a>
+                                        {boardUrls.wellfound && renderJobBoardCard(
+                                            'Wellfound (AngelList)',
+                                            boardUrls.wellfound,
+                                            'Startups',
+                                            'Premier platform for startup jobs & equity'
                                         )}
 
-                                        {/* Otta */}
-                                        <a
-                                            href={boardUrls.welcomeToJungle}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        Welcome to the Jungle
-                                                        <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
-                                                    </h4>
-                                                    <p className="text-cyan-200 text-xs">Otta rebranded - top UK & EU startups</p>
-                                                </div>
-                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
-                                            </div>
-                                        </a>
+                                        {renderJobBoardCard(
+                                            'Welcome to the Jungle',
+                                            boardUrls.welcomeToJungle,
+                                            'Startups',
+                                            'Otta rebranded - top UK & EU startups'
+                                        )}
 
-                                        {/* Adzuna */}
-                                        <a
-                                            href={boardUrls.adzuna}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        Adzuna
-                                                        <span className="text-xs bg-purple-500/30 text-purple-200 px-2 py-0.5 rounded">Startups</span>
-                                                    </h4>
-                                                    <p className="text-cyan-200 text-xs">Multi-source aggregator with startup & corporate jobs</p>
-                                                </div>
-                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
-                                            </div>
-                                        </a>
+                                        {renderJobBoardCard(
+                                            'Adzuna',
+                                            boardUrls.adzuna,
+                                            'Startups',
+                                            'Multi-source aggregator with startup & corporate jobs'
+                                        )}
                                     </>
                                 )}
 
                                 {(activeCategory === 'corporate' || activeCategory === 'all') && (
                                     <>
-                                        {/* Indeed */}
-                                        <a
-                                            href={boardUrls.indeed}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        Indeed UK
-                                                        <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded">Corporate</span>
-                                                    </h4>
-                                                    <p className="text-cyan-200 text-xs">UK's #1 job site with thousands of listings</p>
-                                                </div>
-                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
-                                            </div>
-                                        </a>
+                                        {renderJobBoardCard(
+                                            'Indeed UK',
+                                            boardUrls.indeed,
+                                            'Corporate',
+                                            "UK's #1 job site with thousands of listings"
+                                        )}
 
-                                        {/* LinkedIn */}
-                                        <a
-                                            href={boardUrls.linkedin}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        LinkedIn Jobs
-                                                        <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded">Corporate</span>
-                                                    </h4>
-                                                    <p className="text-cyan-200 text-xs">Professional network with curated opportunities</p>
-                                                </div>
-                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
-                                            </div>
-                                        </a>
+                                        {renderJobBoardCard(
+                                            'LinkedIn Jobs',
+                                            boardUrls.linkedin,
+                                            'Corporate',
+                                            'Professional network with curated opportunities'
+                                        )}
 
-                                        {/* Reed */}
-                                        <a
-                                            href={boardUrls.reed}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="block bg-white/5 hover:bg-white/10 backdrop-blur-lg border border-white/10 rounded-xl p-4 transition-all hover:scale-[1.02] hover:shadow-xl group"
-                                        >
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex-1">
-                                                    <h4 className="text-white font-semibold text-base mb-1 group-hover:text-cyan-300 transition-colors flex items-center gap-2">
-                                                        Reed.co.uk
-                                                        <span className="text-xs bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded">Corporate</span>
-                                                    </h4>
-                                                    <p className="text-cyan-200 text-xs">Specialist UK recruitment with quality listings</p>
-                                                </div>
-                                                <ExternalLink className="w-4 h-4 text-cyan-400 ml-3" />
-                                            </div>
-                                        </a>
+                                        {renderJobBoardCard(
+                                            'Reed.co.uk',
+                                            boardUrls.reed,
+                                            'Corporate',
+                                            'Specialist UK recruitment with quality listings'
+                                        )}
                                     </>
                                 )}
                             </div>
