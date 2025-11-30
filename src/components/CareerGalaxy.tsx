@@ -167,8 +167,9 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                                                 p.name.includes('Business') ||
                                                 p.name.includes('General')
                                             );
-                                            parentId = fallback ? fallback.id : potentialParents[0].id;
-                                            console.log(`🔗 Fallback link for ${nodeInfo.name} to ${nodesMap[parentId].name}`);
+                                            const fallbackId = fallback ? fallback.id : potentialParents[0].id;
+                                            parentId = fallbackId;
+                                            console.log(`🔗 Fallback link for ${nodeInfo.name} to ${nodesMap[fallbackId].name}`);
                                         }
                                     }
                                 }
