@@ -7,7 +7,9 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 
-export default function CoverLetterPage() {
+import { Suspense } from 'react';
+
+function CoverLetterContent() {
     const { user } = useUser();
     const searchParams = useSearchParams();
 
@@ -296,5 +298,17 @@ export default function CoverLetterPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+export default function CoverLetterPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center bg-slate-950">
+                <Loader2 className="w-12 h-12 animate-spin text-purple-500" />
+            </div>
+        }>
+            <CoverLetterContent />
+        </Suspense>
     );
 }
