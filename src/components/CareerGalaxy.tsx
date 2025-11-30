@@ -157,8 +157,8 @@ export default function CareerGalaxy({ data, onNodeClick, paths, recommendationR
                                         });
 
                                         if (bestMatch) {
-                                            parentId = bestMatch.id;
-                                            console.log(`🔗 Auto-linked ${nodeInfo.name} to ${bestMatch.name} (Score: ${maxScore})`);
+                                            parentId = bestMatch!.id;
+                                            console.log(`🔗 Auto-linked ${nodeInfo.name} to ${bestMatch!.name} (Score: ${maxScore})`);
                                         } else {
                                             // 2. Fallback to a generic parent (better than invisible)
                                             // Prefer "Technology" or "Business" if available, else first one
