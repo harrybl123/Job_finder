@@ -17,7 +17,6 @@
     "@pdfme/pdf-lib": "^5.4.8",
     "@prisma/client": "^5.22.0",
     "clsx": "^2.1.1",
-    "elevenlabs": "^1.59.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.554.0",
     "mammoth": "^1.11.0",
